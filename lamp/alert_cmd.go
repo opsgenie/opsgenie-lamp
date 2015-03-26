@@ -1,3 +1,7 @@
+// Copyright 2015 OpsGenie. All rights reserved.
+// Use of this source code is governed by a Apache Software 
+// license that can be found in the LICENSE file.
+
 package lamp
 
 import(
@@ -111,7 +115,8 @@ func GetAlertAction(c *gcli.Context) {
 			}
 			log.Println( output )
 		default:
-			output, err := ResultToJson(resp) 
+			isPretty := c.IsSet("pretty")
+			output, err := ResultToJson(resp, isPretty) 
 			if err != nil {
 				log.Fatalln(err.Error())
 			}
