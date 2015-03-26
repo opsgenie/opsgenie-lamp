@@ -1,3 +1,7 @@
+// Copyright 2015 OpsGenie. All rights reserved.
+// Use of this source code is governed by a Apache Software 
+// license that can be found in the LICENSE file.
+
 package lamp
 
 import (
@@ -86,16 +90,23 @@ func ResultToYaml(data interface{}) (string, error) {
    	return string(d), nil
 }
 
-func ResultToJson(data interface{}) (string, error){
+func ResultToJson(data interface{}, pretty bool) (string, error){
 	// output in json
-	b, err := json.MarshalIndent(data, "", "    ")
-	if err != nil {
-		return "", errors.New("Can not marshal the response into JSON format")
+	if pretty {
+		b, err := json.MarshalIndent(data, "", "    ")
+		if err != nil {
+			return "", errors.New("Can not marshal the response into JSON format")
+		}		
+		return string(b), nil
+	} else {
+		b, err := json.Marshal(data)
+		if err != nil {
+			return "", errors.New("Can not marshal the response into JSON format")
+		}		
+		return string(b), nil
 	}
-	return string(b), nil
+	return "", nil
 }
-
-
 
 func init() {
 	err := gcfg.ReadFileInto(&lampCfg, CONF_FILE_LINUX)	
