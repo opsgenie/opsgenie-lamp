@@ -1,3 +1,7 @@
+// Copyright 2015 OpsGenie. All rights reserved.
+// Use of this source code is governed by a Apache Software 
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
@@ -6,6 +10,8 @@ import (
 	gcli "github.com/codegangsta/cli"
 	lamp "github.com/opsgenie/opsgenie-lamp/lamp"
 )
+
+const LAMP_VERSION string = "1.0.0"
 
 func getCreateAlertCommand() gcli.Command {
 	cmd := gcli.Command{	Name: "createAlert",
@@ -81,7 +87,11 @@ func getGetAlertCommand() gcli.Command {
 									Name:"output-format",
 									Value: "json",
 									Usage: "Prints the output in json or yaml formats",
-								},							
+								},		
+								gcli.BoolFlag{
+									Name:"pretty",
+									Usage: "For more readable JSON output",
+								},					
 							},
 							Usage: "Get alerts details from OpsGenie",
 							Action: lamp.GetAlertAction,
@@ -583,9 +593,11 @@ func initCommands(app *gcli.App) {
 func main() {
 	app := gcli.NewApp()
 	app.Name = "lamp"
-	app.Usage = "OpsGenie command line client"
+	app.Version = LAMP_VERSION
+	app.Usage = "Command line interface for OpsGenie"
+	app.Author = "OpsGenie"
 	app.Action = func(c *gcli.Context) {
-		fmt.Println("Run 'lamp help' for options")
+		fmt.Println("Run 'lamp help' for the options")
 	}
 	initCommands(app)
 	app.Run(os.Args)
