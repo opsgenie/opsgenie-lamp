@@ -22,15 +22,6 @@ func isEmpty(args []string, c *gcli.Context) (bool, string) {
 	return false, ""
 }
 
-func grabApiKey(c *gcli.Context) string {
-	if c.IsSet("apiKey") {
-		return c.String("apiKey")
-	} else {
-		return lampCfg.Lamp.ApiKey
-	}
-	return ""
-}
-
 func CreateAlertAction(c *gcli.Context) {
 	// mandatory arguments: message, recipients (apiKey may be given by the configuration file)
 	if empty, msg := isEmpty([]string{"message", "recipients"}, c); empty == true {

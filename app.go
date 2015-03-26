@@ -486,6 +486,77 @@ func getDeleteAlertCommand() gcli.Command {
 	return cmd	
 }
 
+func getHeartbeatCommand() gcli.Command {
+		cmd := gcli.Command {	Name: "heartbeat",
+							Flags: []gcli.Flag {
+								gcli.StringFlag{
+									Name:"name",
+									Usage:"Name of the heartbeat on OpsGenie",
+								},
+								gcli.StringFlag{
+									Name: "apiKey",
+									Usage: "API key used for authenticating API requests. If not given, the api key in the conf file is used",
+								},									
+							},
+							Usage: "Send periodic heartbeat messages to OpsGenie",
+							Action: lamp.HeartbeatAction,
+						}
+	return cmd	
+}
+
+func getEnableIntegrationCommand() gcli.Command {
+		cmd := gcli.Command {	Name: "enable",
+								Flags: []gcli.Flag {
+								gcli.StringFlag{
+									Name:"id",
+									Usage:"Id of the integration/policy that will be enabled. Either id or name must be provided",
+								},
+								gcli.StringFlag{
+									Name:"name",
+									Usage:"Name of the integration/policy that will be enabled. Either id or name must be provided",
+								},
+								gcli.StringFlag{
+									Name:"type",
+									Usage:"integration or policy",
+								},								
+								gcli.StringFlag{
+									Name: "apiKey",
+									Usage: "API key used for authenticating API requests. If not given, the api key in the conf file is used",
+								},									
+							},
+							Usage: "Enable integrations and policies",
+							Action: lamp.EnableIntegrationAction,
+						}
+	return cmd	
+}
+
+func getDisableIntegrationCommand() gcli.Command {
+		cmd := gcli.Command {	Name: "disable",
+								Flags: []gcli.Flag {
+								gcli.StringFlag{
+									Name:"id",
+									Usage:"Id of the integration/policy that will be disabled. Either id or name must be provided",
+								},
+								gcli.StringFlag{
+									Name:"name",
+									Usage:"Name of the integration/policy that will be disabled. Either id or name must be provided",
+								},
+								gcli.StringFlag{
+									Name:"type",
+									Usage:"integration or policy",
+								},									
+								gcli.StringFlag{
+									Name: "apiKey",
+									Usage: "API key used for authenticating API requests. If not given, the api key in the conf file is used",
+								},									
+							},
+							Usage: "Disable integrations and policies",
+							Action: lamp.DisableIntegrationAction,
+						}
+	return cmd	
+}
+
+
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command {
 		// create alert command
@@ -502,6 +573,9 @@ func initCommands(app *gcli.App) {
 		getExecuteActionCommand(),
 		getCloseAlertCommand(),
 		getDeleteAlertCommand(),
+		getHeartbeatCommand(),
+		getEnableIntegrationCommand(),
+		getDisableIntegrationCommand(),
 	}
 }
 
