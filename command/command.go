@@ -32,6 +32,14 @@ type LampConfig struct {
 	Lamp struct {
 		ApiKey string
 	}
+	Proxy struct {
+		Enabled		bool
+		Username 	string
+		Password 	string
+		Host 		string
+		Port 		int
+		Secured 	bool
+	}
 }
 
 var lampCfg LampConfig
@@ -47,12 +55,28 @@ func grabApiKey(c *gcli.Context) string {
 	}
 	return ""
 }
+
+func getProxyConf() (proxy *ogcli.ClientProxyConfiguration) {
+	pc := new (ogcli.ClientProxyConfiguration)
+	pc.Host = lampCfg.Proxy.Host
+	pc.Port = lampCfg.Proxy.Port
+	if lampCfg.Proxy.Username != "" && lampCfg.Proxy.Password != "" {
+		pc.Username = lampCfg.Proxy.Username
+		pc.Password = lampCfg.Proxy.Password
+	}
+	pc.Secured = lampCfg.Proxy.Secured
+	return pc
+}
+
+
 // In order to interact with the Alert API, one must handle an AlertClient.
 // The 'NewAlertClient' function creates and returns an instance of that type.
 func NewAlertClient(apiKey string) (*ogcli.OpsGenieAlertClient, error) {
 	cli := new (ogcli.OpsGenieClient)
 	cli.SetApiKey(apiKey)
-	
+	if lampCfg.Proxy.Enabled {
+		cli.SetClientProxyConfiguration( getProxyConf() )
+	}
 	alertCli, cliErr := cli.Alert()
 	
 	if cliErr != nil {
@@ -65,7 +89,9 @@ func NewAlertClient(apiKey string) (*ogcli.OpsGenieAlertClient, error) {
 func NewHeartbeatClient(apiKey string) (*ogcli.OpsGenieHeartbeatClient, error) {
 	cli := new (ogcli.OpsGenieClient)
 	cli.SetApiKey(apiKey)
-	
+	if lampCfg.Proxy.Enabled {
+		cli.SetClientProxyConfiguration( getProxyConf() )
+	}	
 	hbCli, cliErr := cli.Heartbeat()
 	
 	if cliErr != nil {
@@ -78,7 +104,9 @@ func NewHeartbeatClient(apiKey string) (*ogcli.OpsGenieHeartbeatClient, error) {
 func NewIntegrationClient(apiKey string) (*ogcli.OpsGenieIntegrationClient, error) {
 	cli := new (ogcli.OpsGenieClient)
 	cli.SetApiKey(apiKey)
-	
+	if lampCfg.Proxy.Enabled {
+		cli.SetClientProxyConfiguration( getProxyConf() )
+	}	
 	intCli, cliErr := cli.Integration()
 	
 	if cliErr != nil {
@@ -91,7 +119,9 @@ func NewIntegrationClient(apiKey string) (*ogcli.OpsGenieIntegrationClient, erro
 func NewPolicyClient(apiKey string) (*ogcli.OpsGeniePolicyClient, error) {
 	cli := new (ogcli.OpsGenieClient)
 	cli.SetApiKey(apiKey)
-	
+	if lampCfg.Proxy.Enabled {
+		cli.SetClientProxyConfiguration( getProxyConf() )
+	}	
 	polCli, cliErr := cli.Policy()
 	
 	if cliErr != nil {

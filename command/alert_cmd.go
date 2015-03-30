@@ -103,7 +103,7 @@ func GetAlertAction(c *gcli.Context) {
 	// send the request
 	resp, err := cli.Get(req)
 	if err != nil {
-		log.Fatalln("Unable to get the alert")
+		log.Fatalln("Unable to get the alert." + err.Error())
 	}
 	// output
 	outputFormat := strings.ToLower(c.String("output-format"))
