@@ -19,11 +19,11 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	gcli "github.com/codegangsta/cli"
 	"log"
+	"os"
 )
+
 // The configuration file used by the client
-// TODO Read from the environment variable LAMP_HOME
-// TODO Same configuration for the Windows is required
-const CONF_FILE_LINUX string = "/etc/opsgenie/conf/opsgenie-integration.conf"
+const CONF_FILE string = "/conf/opsgenie-integration.conf"
 
 // Configuration is parsed from an 'ini' style file.
 // The key-value pairs are stored inside a struct data type.
@@ -137,7 +137,11 @@ func ResultToJson(data interface{}, pretty bool) (string, error){
 // initialize the program. Here, it is responsible for reading the configuration 
 // into the configuration struct data.
 func init() {
-	err := gcfg.ReadFileInto(&lampCfg, CONF_FILE_LINUX)	
+	if os.Getenv("LAMP_HOME") == ""{
+		log.Fatalln("LAMP_HOME environment variable is not set!")
+	}
+	conf_file_path := os.Getenv("LAMP_HOME") + CONF_FILE
+	err := gcfg.ReadFileInto(&lampCfg, conf_file_path)	
 	if err != nil {
 		log.Fatalln("Can not read the lamp configuration file!")
 	}
