@@ -21,6 +21,7 @@ import (
 	"os"
 	log "gopkg.in/inconshreveable/log15.v2"
 	"fmt"
+	"time"
 )
 
 var cmdlog = log.New("opsgenie", "lamp")
@@ -43,11 +44,16 @@ type LampConfig struct {
 		Port 		int
 		Secured 	bool
 	}
-	Logging struct{
+	Logging struct {
 		Enabled		bool
 		Level 		string
 		File 		string
 		Format 		string
+	}
+	Connection struct {
+		Usedefaults 	bool
+		Timeout			time.Duration
+		Retries 		int
 	}
 }
 
@@ -77,6 +83,12 @@ func getProxyConf() (proxy *ogcli.ClientProxyConfiguration) {
 	return pc
 }
 
+func getConnectionConf() (connCfg *ogcli.HttpTransportSettings) {
+	cfg := new (ogcli.HttpTransportSettings)
+	cfg.ConnectionTimeout = lampCfg.Connection.Timeout
+	cfg.MaxRetryAttempts = lampCfg.Connection.Retries
+	return cfg
+}
 
 // In order to interact with the Alert API, one must handle an AlertClient.
 // The 'NewAlertClient' function creates and returns an instance of that type.
@@ -85,6 +97,9 @@ func NewAlertClient(apiKey string) (*ogcli.OpsGenieAlertClient, error) {
 	cli.SetApiKey(apiKey)
 	if lampCfg.Proxy.Enabled {
 		cli.SetClientProxyConfiguration( getProxyConf() )
+	}
+	if !lampCfg.Connection.Usedefaults {
+		cli.SetHttpTransportSettings( getConnectionConf() )
 	}
 	alertCli, cliErr := cli.Alert()
 	
@@ -101,6 +116,9 @@ func NewHeartbeatClient(apiKey string) (*ogcli.OpsGenieHeartbeatClient, error) {
 	if lampCfg.Proxy.Enabled {
 		cli.SetClientProxyConfiguration( getProxyConf() )
 	}	
+	if !lampCfg.Connection.Usedefaults {
+		cli.SetHttpTransportSettings( getConnectionConf() )
+	}
 	hbCli, cliErr := cli.Heartbeat()
 	
 	if cliErr != nil {
@@ -116,6 +134,9 @@ func NewIntegrationClient(apiKey string) (*ogcli.OpsGenieIntegrationClient, erro
 	if lampCfg.Proxy.Enabled {
 		cli.SetClientProxyConfiguration( getProxyConf() )
 	}	
+	if !lampCfg.Connection.Usedefaults {
+		cli.SetHttpTransportSettings( getConnectionConf() )
+	}
 	intCli, cliErr := cli.Integration()
 	
 	if cliErr != nil {
@@ -131,6 +152,9 @@ func NewPolicyClient(apiKey string) (*ogcli.OpsGeniePolicyClient, error) {
 	if lampCfg.Proxy.Enabled {
 		cli.SetClientProxyConfiguration( getProxyConf() )
 	}	
+	if !lampCfg.Connection.Usedefaults {
+		cli.SetHttpTransportSettings( getConnectionConf() )
+	}
 	polCli, cliErr := cli.Policy()
 	
 	if cliErr != nil {
