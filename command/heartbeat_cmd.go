@@ -7,22 +7,25 @@ package command
 import(
 	// "fmt"
 	gcli "github.com/codegangsta/cli"
-	"log"
 	hb "github.com/opsgenie/opsgenie-go-sdk/heartbeat"
 	// ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
 	// "strings"
 	// "errors"
+	"os"
 )
 
 func HeartbeatAction(c *gcli.Context) {
 	// mandatory arguments: name (apiKey may be given by the configuration file)
 	if !c.IsSet("name") {
-		log.Fatalln("Name parameter is mandatory and must be provided")
+		cmdlog.Error("Name parameter is mandatory and must be provided")
+		gcli.ShowCommandHelp(c, "heartbeat")
+		os.Exit(1)
 	}	
 	// get a client instance using the api key
 	cli, err := NewHeartbeatClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error())
+		os.Exit(1)
 	}
 	// build the renotify request
 	req := hb.SendHeartbeatRequest{}	
@@ -32,7 +35,8 @@ func HeartbeatAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.Send(req)
 	if err != nil {
-		log.Fatalln("Could not send heartbeat")
+		cmdlog.Error("Could not send heartbeat")
+		os.Exit(1)
 	}
-	log.Println("Heartbeat sent successfuly")
+	cmdlog.Info("Heartbeat sent successfuly")
 }

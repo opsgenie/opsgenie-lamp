@@ -7,12 +7,12 @@ package command
 import(
 	"fmt"
 	gcli "github.com/codegangsta/cli"
-	"log"
 	alerts "github.com/opsgenie/opsgenie-go-sdk/alerts"
 	// ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
 	"strings"
 	// "errors"
-
+	// "log"
+	"os"
 )
 
 const MAX_ALERT_MSG_LENGTH int = 130
@@ -23,24 +23,30 @@ func isEmpty(args []string, c *gcli.Context) (bool, string) {
 			return true, fmt.Sprintf("Argument '%s' is missing", arg)
 		}
 	}
-	return false, ""
+	return false, "" 
 }
 
 func CreateAlertAction(c *gcli.Context) {
+
 	// mandatory arguments: message, recipients (apiKey may be given by the configuration file)
 	if empty, msg := isEmpty([]string{"message", "recipients"}, c); empty == true {
-		log.Fatalln(msg)
+		cmdlog.Error(msg, "command", "createAlert")
+		gcli.ShowCommandHelp(c, "createAlert")
+		os.Exit(1)
 	}
 	// message can not be longer than MAX_ALERT_MSG_LENGTH chars
 	if len(c.String("message")) > MAX_ALERT_MSG_LENGTH {
-		log.Fatalln( fmt.Sprintf("Alert message can not be longer than %d characters", MAX_ALERT_MSG_LENGTH) )
+		cmdlog.Error( fmt.Sprintf("Alert message can not be longer than %d characters", MAX_ALERT_MSG_LENGTH), "command", "createAlert" )
+		gcli.ShowCommandHelp(c, "createAlert")
+		os.Exit(1)
 	}
 
 	recipientsArr := strings.Split( c.String("recipients"), "," )
 	// get a client instance using an api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "createAlert")
+		os.Exit(1)
 	}
 	// create the alert
 	req := alerts.CreateAlertRequest{}
@@ -74,24 +80,30 @@ func CreateAlertAction(c *gcli.Context) {
 	// send the request
 	resp, err := cli.Create(req)	
 	if err != nil {
-		log.Fatalln("Unable to create the alert: " + err.Error() )
+		cmdlog.Error("Unable to create the alert: " + err.Error() , "command", "createAlert")
+		os.Exit(1)
 	}	
-	log.Println("Alert created with the ID: " + resp.AlertId)
+	cmdlog.Info("Alert created with the ID: " + resp.AlertId, "command", "createAlert")
 }
 
 
 func GetAlertAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "getAlert")
+		gcli.ShowCommandHelp(c, "getAlert")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "getAlert")
+		gcli.ShowCommandHelp(c, "getAlert")
+		os.Exit(1)
 	}
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "getAlert")
+		os.Exit(1)
 	}
 	// build the get-alert request
 	req := alerts.GetAlertRequest{}
@@ -103,7 +115,8 @@ func GetAlertAction(c *gcli.Context) {
 	// send the request
 	resp, err := cli.Get(req)
 	if err != nil {
-		log.Fatalln("Unable to get the alert." + err.Error())
+		cmdlog.Error("Unable to get the alert." + err.Error(), "command", "getAlert")
+		os.Exit(1)
 	}
 	// output
 	outputFormat := strings.ToLower(c.String("output-format"))
@@ -111,34 +124,42 @@ func GetAlertAction(c *gcli.Context) {
 		case "yaml": 
 			output, err := ResultToYaml(resp) 
 			if err != nil {
-				log.Fatalln(err.Error())
+				cmdlog.Error(err.Error(), "command", "getAlert")
+				os.Exit(1)
 			}
-			log.Println( output )
+			cmdlog.Info( output )
 		default:
 			isPretty := c.IsSet("pretty")
 			output, err := ResultToJson(resp, isPretty) 
 			if err != nil {
-				log.Fatalln(err.Error())
+				cmdlog.Error(err.Error())
+				os.Exit(1)
 			}
-			log.Println( output )
+			cmdlog.Info( output , "command", "getAlert")
 	}
 }
 
 func AttachFileAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias, attachment (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "attachFile")
+		gcli.ShowCommandHelp(c, "attachFile")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "attachFile")
+		gcli.ShowCommandHelp(c, "attachFile")
+		os.Exit(1)
 	}
 	if !c.IsSet("attachment") {
-		log.Fatalln("Attachment file must be given")
+		cmdlog.Error("Attachment file must be given", "command", "attachFile")
+		os.Exit(1)
 	}
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "attachFile")
+		os.Exit(1)
 	}
 	// build the attach-file request
 	req := alerts.AttachFileAlertRequest{}
@@ -162,23 +183,29 @@ func AttachFileAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.AttachFile(req)
 	if err != nil {
-		log.Fatalln( fmt.Sprintf("Unable to attach the file %s", c.String("attachment")) )
+		cmdlog.Error( fmt.Sprintf("Unable to attach the file %s", c.String("attachment")) , "command", "attachFile")
+		os.Exit(1)
 	}	
-	log.Println( fmt.Sprintf("%s attached successfuly", c.String("attachment")) )
+	cmdlog.Info( fmt.Sprintf("%s attached successfuly", c.String("attachment")) , "command", "attachFile")
 }
 
 func AcknowledgeAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "acknowledge")
+		gcli.ShowCommandHelp(c, "acknowledge")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "acknowledge")
+		gcli.ShowCommandHelp(c, "acknowledge")
+		os.Exit(1)
 	}	
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "acknowledge")
+		os.Exit(1)
 	}
 	// build the attach-file request
 	req := alerts.AcknowledgeAlertRequest{}
@@ -199,24 +226,30 @@ func AcknowledgeAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.Acknowledge(req)
 	if err != nil {
-		log.Fatalln("Could not acknowledge the alert")
+		cmdlog.Error("Could not acknowledge the alert", "command", "acknowledge")
+		os.Exit(1)
 	}
-	log.Println("Acknowledged successfuly")
+	cmdlog.Info("Acknowledged successfuly", "command", "acknowledge")	
 }
 
 
 func RenotifyAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "renotify")
+		gcli.ShowCommandHelp(c, "renotify")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "renotify")
+		gcli.ShowCommandHelp(c, "renotify")
+		os.Exit(1)
 	}	
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error())
+		os.Exit(1)
 	}
 	// build the renotify request
 	req := alerts.RenotifyAlertRequest{}	
@@ -240,23 +273,29 @@ func RenotifyAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.Renotify(req)
 	if err != nil {
-		log.Fatalln("Could not renotify the recipient(s)")
+		cmdlog.Error("Could not renotify the recipient(s)", "command", "renotify")
+		os.Exit(1)
 	}
-	log.Println("Renotified successfuly")
+	cmdlog.Info("Renotified successfuly", "command", "renotify")
 }
 
 func TakeOwnershipAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "takeOwnership")
+		gcli.ShowCommandHelp(c, "takeOwnership")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "takeOwnership")
+		gcli.ShowCommandHelp(c, "takeOwnership")
+		os.Exit(1)
 	}	
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error())
+		os.Exit(1)
 	}
 	// build the renotify request
 	req := alerts.TakeOwnershipAlertRequest{}	
@@ -277,26 +316,34 @@ func TakeOwnershipAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.TakeOwnership(req)
 	if err != nil {
-		log.Fatalln("Could not take the ownership")
+		cmdlog.Error("Could not take the ownership", "command", "takeOwnership")
+		os.Exit(1)
 	}
-	log.Println("Ownership taken successfuly")
+	cmdlog.Info("Ownership taken successfuly", "command", "takeOwnership")
 }
 
 func AssignOwnerAction(c *gcli.Context) {
 		// mandatory arguments: alertId/alias, owner (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "assign")
+		gcli.ShowCommandHelp(c, "assign")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "assign")
+		gcli.ShowCommandHelp(c, "assign")
+		os.Exit(1)
 	}	
 	if !c.IsSet("owner") {
-		log.Fatalln("Owner should be provided, it can not be empty")
+		cmdlog.Error("Owner should be provided, it can not be empty", "command", "assign")
+		gcli.ShowCommandHelp(c, "assign")
+		os.Exit(1)
 	}
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "assign")
+		os.Exit(1)
 	}
 	// build the renotify request
 	req := alerts.AssignOwnerAlertRequest{}	
@@ -320,26 +367,33 @@ func AssignOwnerAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.AssignOwner(req)
 	if err != nil {
-		log.Fatalln("Could not assign the ownership")
+		cmdlog.Error("Could not assign the ownership", "command", "assign")
+		os.Exit(1)
 	}
-	log.Println("Ownership assigned successfuly")
+	cmdlog.Info("Ownership assigned successfuly", "command", "assign")
 }
 
 func AddTeamAction(c *gcli.Context) {
 			// mandatory arguments: alertId/alias, team (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "addTeam")
+		gcli.ShowCommandHelp(c, "addTeam")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "addTeam")
+		gcli.ShowCommandHelp(c, "addTeam")
+		os.Exit(1)
 	}	
 	if !c.IsSet("team") {
-		log.Fatalln("Team should be provided, it can not be empty")
+		cmdlog.Error("Team should be provided, it can not be empty", "command", "addTeam")
+		os.Exit(1)
 	}
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error())
+		os.Exit(1)
 	}
 	// build the add-team request
 	req := alerts.AddTeamAlertRequest{}	
@@ -363,27 +417,35 @@ func AddTeamAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.AddTeam(req)
 	if err != nil {
-		log.Fatalln("Could not add team")
+		cmdlog.Error("Could not add team", "command", "addTeam")
+		os.Exit(1)
 	}
-	log.Println("Team added successfuly")
+	cmdlog.Info("Team added successfuly", "command", "addTeam")
 }
 
 
 func AddRecipientAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias, recipient (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "addRecipient")
+		gcli.ShowCommandHelp(c, "addRecipient")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "addRecipient")
+		gcli.ShowCommandHelp(c, "addRecipient")
+		os.Exit(1)
 	}	
 	if !c.IsSet("recipient") {
-		log.Fatalln("Recipient should be provided, it can not be empty")
+		cmdlog.Error("Recipient should be provided, it can not be empty", "command", "addRecipient")
+		gcli.ShowCommandHelp(c, "addRecipient")
+		os.Exit(1)
 	}
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "addRecipient")
+		os.Exit(1)
 	}
 	// build the add-team request
 	req := alerts.AddRecipientAlertRequest{}	
@@ -407,26 +469,34 @@ func AddRecipientAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.AddRecipient(req)
 	if err != nil {
-		log.Fatalln("Could not add recipient")
+		cmdlog.Error("Could not add recipient", "command", "addRecipient")
+		os.Exit(1)
 	}
-	log.Println("Recipient added successfuly")	
+	cmdlog.Info("Recipient added successfuly", "command", "addRecipient")	
 }
 
 func AddNoteAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias, note (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "addNote")
+		gcli.ShowCommandHelp(c, "addNote")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "addNote")
+		gcli.ShowCommandHelp(c, "addNote")
+		os.Exit(1)
 	}	
 	if !c.IsSet("note") {
-		log.Fatalln("Note argument should be provided, it can not be empty")
+		cmdlog.Error("Note argument should be provided, it can not be empty", "command", "addNote")
+		gcli.ShowCommandHelp(c, "addNote")
+		os.Exit(1)
 	}
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error())
+		os.Exit(1)
 	}
 	// build the add-team request
 	req := alerts.AddNoteAlertRequest{}	
@@ -447,26 +517,34 @@ func AddNoteAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.AddNote(req)
 	if err != nil {
-		log.Fatalln("Could not add note")
+		cmdlog.Error("Could not add note", "command", "addNote")
+		os.Exit(1)
 	}
-	log.Println("Note added successfuly")	
+	cmdlog.Info("Note added successfuly", "command", "addNote")	
 }
 
 func ExecuteActionAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias, action (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "executeAction")
+		gcli.ShowCommandHelp(c, "executeAction")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "executeAction")
+		gcli.ShowCommandHelp(c, "executeAction")
+		os.Exit(1)
 	}	
 	if !c.IsSet("action") {
-		log.Fatalln("Note argument should be provided, it can not be empty")
+		cmdlog.Error("Note argument should be provided, it can not be empty", "command", "executeAction")
+		gcli.ShowCommandHelp(c, "executeAction")
+		os.Exit(1)
 	}
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "executeAction")
+		os.Exit(1)
 	}
 	// build the add-team request
 	req := alerts.ExecuteActionAlertRequest{}	
@@ -490,23 +568,29 @@ func ExecuteActionAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.ExecuteAction(req)
 	if err != nil {
-		log.Fatalln("Could not execute the action")
+		cmdlog.Error("Could not execute the action", "command", "executeAction")
+		os.Exit(1)
 	}
-	log.Println(fmt.Sprintf("Action '%s' executed successfuly", c.String("action")))	
+	cmdlog.Info(fmt.Sprintf("Action '%s' executed successfuly", c.String("action")), "command", "executeAction")	
 }
 
 func CloseAlertAction(c *gcli.Context) {
 	// mandatory arguments: alertId/alias (apiKey may be given by the configuration file)
 	if c.IsSet("alertId") && c.IsSet("alias") {
-		log.Fatalln("Either alert id or alias must be provided, not both")
+		cmdlog.Error("Either alert id or alias must be provided, not both", "command", "closeAlert")
+		gcli.ShowCommandHelp(c, "closeAlert")
+		os.Exit(1)
 	}
 	if !c.IsSet("alertId") && !c.IsSet("alias") {
-		log.Fatalln("At least one of the alert id and alias must be provided")
+		cmdlog.Error("At least one of the alert id and alias must be provided", "command", "closeAlert")
+		gcli.ShowCommandHelp(c, "closeAlert")
+		os.Exit(1)
 	}	
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "closeAlert")
+		os.Exit(1)
 	}
 	// build the add-team request
 	req := alerts.CloseAlertRequest{}	
@@ -527,20 +611,24 @@ func CloseAlertAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.Close(req)
 	if err != nil {
-		log.Fatalln("Could not close the alert")
+		cmdlog.Error("Could not close the alert", "command", "closeAlert")
+		os.Exit(1)
 	}
-	log.Println("Alert closed successfuly")	
+	cmdlog.Info("Alert closed successfuly", "command", "closeAlert")	
 }
 
 func DeleteAlertAction(c *gcli.Context) {
 	// mandatory arguments: alertId (apiKey may be given by the configuration file)
 	if !c.IsSet("alertId") {
-		log.Fatalln("Alert id must be provided")
+		cmdlog.Error("Alert id must be provided", "command", "deleteAlert")
+		gcli.ShowCommandHelp(c, "deleteAlert")
+		os.Exit(1)
 	}	
 	// get a client instance using the api key
 	cli, err := NewAlertClient( grabApiKey(c) )	
 	if err != nil {
-		log.Fatalln(err.Error())
+		cmdlog.Error(err.Error(), "command", "deleteAlert")
+		os.Exit(1)
 	}
 	// build the add-team request
 	req := alerts.DeleteAlertRequest{}	
@@ -556,7 +644,8 @@ func DeleteAlertAction(c *gcli.Context) {
 	// send the request
 	_, err = cli.Delete(req)
 	if err != nil {
-		log.Fatalln("Could not delete the alert")
+		cmdlog.Error("Could not delete the alert", "command", "deleteAlert")
+		os.Exit(1)
 	}
-	log.Println( fmt.Sprintf("Alert with id of %s deleted successfuly", c.String("alertId")) )	
+	cmdlog.Info( fmt.Sprintf("Alert with id of %s deleted successfuly", c.String("alertId")) , "command", "deleteAlert")	
 }

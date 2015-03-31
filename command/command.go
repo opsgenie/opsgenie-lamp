@@ -18,9 +18,12 @@ import (
 	"encoding/json"
 	yaml "gopkg.in/yaml.v2"
 	gcli "github.com/codegangsta/cli"
-	"log"
 	"os"
+	log "gopkg.in/inconshreveable/log15.v2"
+	"fmt"
 )
+
+var cmdlog = log.New("opsgenie", "lamp")
 
 // The configuration file used by the client
 const CONF_FILE string = "/conf/opsgenie-integration.conf"
@@ -39,6 +42,12 @@ type LampConfig struct {
 		Host 		string
 		Port 		int
 		Secured 	bool
+	}
+	Logging struct{
+		Enabled		bool
+		Level 		string
+		File 		string
+		Format 		string
 	}
 }
 
@@ -167,12 +176,34 @@ func ResultToJson(data interface{}, pretty bool) (string, error){
 // initialize the program. Here, it is responsible for reading the configuration 
 // into the configuration struct data.
 func init() {
+	// getting the environment variable
 	if os.Getenv("LAMP_HOME") == ""{
-		log.Fatalln("LAMP_HOME environment variable is not set!")
+		fmt.Println("LAMP_HOME environment variable is not set!")
+		os.Exit(1)
 	}
 	conf_file_path := os.Getenv("LAMP_HOME") + CONF_FILE
 	err := gcfg.ReadFileInto(&lampCfg, conf_file_path)	
 	if err != nil {
-		log.Fatalln("Can not read the lamp configuration file!")
+		fmt.Println("Can not read the lamp configuration file!")
+		os.Exit(1)
 	}
+	// configuring the logger - l4g (log4go)
+	severity, _ := log.LvlFromString(lampCfg.Logging.Level)	
+	var outFmt log.Format
+	switch lampCfg.Logging.Format {
+		case "terminal": 
+			outFmt = log.TerminalFormat()
+			break
+		case "json": 
+			outFmt = log.JsonFormat()
+			break
+		case "jsonp": 
+			outFmt = log.JsonFormatEx(true, true)
+			break
+		default:
+			outFmt = log.LogfmtFormat()
+	}
+	cmdlog.SetHandler(log.MultiHandler(
+    	log.StreamHandler(os.Stdout, outFmt),
+    	log.LvlFilterHandler(severity, log.Must.FileHandler(lampCfg.Logging.File, outFmt))))
 }

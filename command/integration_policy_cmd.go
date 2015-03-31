@@ -7,28 +7,33 @@ package command
 import(
 	"fmt"
 	gcli "github.com/codegangsta/cli"
-	"log"
 	integration "github.com/opsgenie/opsgenie-go-sdk/integration"
 	policy "github.com/opsgenie/opsgenie-go-sdk/policy"
 	// ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
 	// "strings"
 	// "errors"
+	"os"
 )
 
 func EnableIntegrationAction(c *gcli.Context) {
 	// mandatory arguments: id/name (apiKey may be given by the configuration file)
 	if c.IsSet("id") && c.IsSet("name") {
-		log.Fatalln("Either alert id or name must be provided, not both")
+		cmdlog.Error("Either alert id or name must be provided, not both")
+		gcli.ShowCommandHelp(c, "enable")
+		os.Exit(1)
 	}
 	if !c.IsSet("id") && !c.IsSet("name") {
-		log.Fatalln("At least one of the alert id and name must be provided")
+		cmdlog.Error("At least one of the alert id and name must be provided")
+		gcli.ShowCommandHelp(c, "enable")
+		os.Exit(1)
 	}
 	switch c.String("type") {
 	case "policy":		
 		// get a client instance using the api key
 		cli, err := NewPolicyClient( grabApiKey(c) )	
 		if err != nil {
-			log.Fatalln(err.Error())
+			cmdlog.Error(err.Error())
+			os.Exit(1)
 		}
 		// build the enable-policy request
 		req := policy.EnablePolicyRequest{}	
@@ -40,15 +45,17 @@ func EnableIntegrationAction(c *gcli.Context) {
 		// send the request
 		_, err = cli.Enable(req)
 		if err != nil {
-			log.Fatalln("Could not enable the policy")
+			cmdlog.Error("Could not enable the policy")
+			os.Exit(1)
 		}
-		log.Println("Policy enabled successfuly")
+		cmdlog.Info("Policy enabled successfuly")
 
 	case "integration":
 		// get a client instance using the api key
 		cli, err := NewIntegrationClient( grabApiKey(c) )	
 		if err != nil {
-			log.Fatalln(err.Error())
+			cmdlog.Error(err.Error())
+			os.Exit(1)
 		}
 		// build the enable-integration request
 		req := integration.EnableIntegrationRequest{}	
@@ -60,11 +67,14 @@ func EnableIntegrationAction(c *gcli.Context) {
 		// send the request
 		_, err = cli.Enable(req)
 		if err != nil {
-			log.Fatalln("Could not enable the integration")
+			cmdlog.Error("Could not enable the integration")
+			os.Exit(1)
 		}
-		log.Println("Integration enabled successfuly")
+		cmdlog.Info("Integration enabled successfuly")
 	default:
-		log.Fatalln(fmt.Sprintf("Invalid type option %s, specify either integration or policy", c.String("type")))
+		cmdlog.Error(fmt.Sprintf("Invalid type option %s, specify either integration or policy", c.String("type")))
+		gcli.ShowCommandHelp(c, "enable")
+		os.Exit(1)
 	}
 
 }
@@ -72,10 +82,14 @@ func EnableIntegrationAction(c *gcli.Context) {
 func DisableIntegrationAction(c *gcli.Context) {
 	// mandatory arguments: id/name (apiKey may be given by the configuration file)
 	if c.IsSet("id") && c.IsSet("name") {
-		log.Fatalln("Either alert id or name must be provided, not both")
+		cmdlog.Error("Either alert id or name must be provided, not both")
+		gcli.ShowCommandHelp(c, "disable")
+		os.Exit(1)
 	}
 	if !c.IsSet("id") && !c.IsSet("name") {
-		log.Fatalln("At least one of the alert id and name must be provided")
+		cmdlog.Error("At least one of the alert id and name must be provided")
+		gcli.ShowCommandHelp(c, "disable")
+		os.Exit(1)
 	}
 
 	switch c.String("type") {
@@ -83,7 +97,8 @@ func DisableIntegrationAction(c *gcli.Context) {
 		// get a client instance using the api key
 		cli, err := NewPolicyClient( grabApiKey(c) )	
 		if err != nil {
-			log.Fatalln(err.Error())
+			cmdlog.Error(err.Error())
+			os.Exit(1)
 		}
 		// build the disable-policy request
 		req := policy.DisablePolicyRequest{}	
@@ -95,15 +110,17 @@ func DisableIntegrationAction(c *gcli.Context) {
 		// send the request
 		_, err = cli.Disable(req)
 		if err != nil {
-			log.Fatalln("Could not disable the policy")
+			cmdlog.Error("Could not disable the policy")
+			os.Exit(1)
 		}
-		log.Println("Policy disabled successfuly")		
+		cmdlog.Info("Policy disabled successfuly")		
 
 	case "integration":
 		// get a client instance using the api key
 		cli, err := NewIntegrationClient( grabApiKey(c) )	
 		if err != nil {
-			log.Fatalln(err.Error())
+			cmdlog.Error(err.Error())
+			os.Exit(1)
 		}
 		// build the disable-integration request
 		req := integration.DisableIntegrationRequest{}	
@@ -115,10 +132,13 @@ func DisableIntegrationAction(c *gcli.Context) {
 		// send the request
 		_, err = cli.Disable(req)
 		if err != nil {
-			log.Fatalln("Could not disable the integration")
+			cmdlog.Error("Could not disable the integration")
+			os.Exit(1)
 		}
-		log.Println("Integration disabled successfuly")
+		cmdlog.Info("Integration disabled successfuly")
 	default:
-		log.Fatalln(fmt.Sprintf("Invalid type option %s, specify either integration or policy", c.String("type")))
+		cmdlog.Error(fmt.Sprintf("Invalid type option %s, specify either integration or policy", c.String("type")))
+		gcli.ShowCommandHelp(c, "disable")
+		os.Exit(1)
 	}
 }
