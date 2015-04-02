@@ -36,7 +36,8 @@ const CONF_FILE string = SEP + "conf" + SEP + "opsgenie-integration.conf"
 // TODO logging properties to be read
 type LampConfig struct {
 	Lamp struct {
-		ApiKey string
+		ApiKey 	string
+		User 	string
 	}
 	Proxy struct {
 		Enabled		bool
@@ -69,6 +70,15 @@ func grabApiKey(c *gcli.Context) string {
 		return c.String("apiKey")
 	} else {
 		return lampCfg.Lamp.ApiKey
+	}
+	return ""
+}
+
+func grabUsername(c *gcli.Context) string {
+	if c.IsSet("user") {
+		return c.String("user")
+	} else {
+		return lampCfg.Lamp.User
 	}
 	return ""
 }

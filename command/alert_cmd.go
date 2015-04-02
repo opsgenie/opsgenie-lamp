@@ -71,9 +71,7 @@ func CreateAlertAction(c *gcli.Context) {
 	if c.IsSet("entity") {
 		req.Entity = c.String("entity")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("note") {
 		req.Note = c.String("note")
 	}
@@ -171,9 +169,7 @@ func AttachFileAction(c *gcli.Context) {
 	if c.IsSet("attachment") {
 		req.Attachment = c.String("attachment")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -214,9 +210,7 @@ func AcknowledgeAction(c *gcli.Context) {
 	} else if c.IsSet("alias") {
 		req.Alias = c.String("alias")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -261,9 +255,7 @@ func RenotifyAction(c *gcli.Context) {
 	if c.IsSet("recipients") {
 		req.Recipients = strings.Split(c.String("recipients"), ",")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -304,9 +296,7 @@ func TakeOwnershipAction(c *gcli.Context) {
 	} else if c.IsSet("alias") {
 		req.Alias = c.String("alias")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -355,9 +345,7 @@ func AssignOwnerAction(c *gcli.Context) {
 	if c.IsSet("owner") {
 		req.Owner = c.String("owner")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -405,9 +393,7 @@ func AddTeamAction(c *gcli.Context) {
 	if c.IsSet("team") {
 		req.Team = c.String("team")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -457,9 +443,7 @@ func AddRecipientAction(c *gcli.Context) {
 	if c.IsSet("recipient") {
 		req.Recipient = c.String("recipient")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -505,9 +489,7 @@ func AddNoteAction(c *gcli.Context) {
 	} else if c.IsSet("alias") {
 		req.Alias = c.String("alias")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -556,9 +538,7 @@ func ExecuteActionAction(c *gcli.Context) {
 	if c.IsSet("action") {
 		req.Action = c.String("action")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -599,9 +579,7 @@ func CloseAlertAction(c *gcli.Context) {
 	} else if c.IsSet("alias") {
 		req.Alias = c.String("alias")
 	}
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}
@@ -635,9 +613,7 @@ func DeleteAlertAction(c *gcli.Context) {
 	if c.IsSet("alertId") {
 		req.AlertId = c.String("alertId")		
 	} 
-	if c.IsSet("user") {
-		req.User = c.String("user")
-	}
+	req.User = grabUsername(c);
 	if c.IsSet("source") {
 		req.Source = c.String("source")
 	}	
