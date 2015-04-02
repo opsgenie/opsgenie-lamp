@@ -22,12 +22,14 @@ import (
 	log "gopkg.in/inconshreveable/log15.v2"
 	"fmt"
 	"time"
+	"path/filepath"
 )
 
 var cmdlog = log.New("opsgenie", "lamp")
 
 // The configuration file used by the client
-const CONF_FILE string = "/conf/opsgenie-integration.conf"
+const SEP string = string(filepath.Separator)
+const CONF_FILE string = SEP + "conf" + SEP + "opsgenie-integration.conf"
 
 // Configuration is parsed from an 'ini' style file.
 // The key-value pairs are stored inside a struct data type.
