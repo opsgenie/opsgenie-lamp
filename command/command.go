@@ -14,164 +14,197 @@ package command
 import (
 	ogcli "github.com/opsgenie/opsgenie-go-sdk/client" 
 	"errors"
-	gcfg "code.google.com/p/gcfg"
 	"encoding/json"
 	yaml "gopkg.in/yaml.v2"
 	gcli "github.com/codegangsta/cli"
 	"os"
-	log "gopkg.in/inconshreveable/log15.v2"
-	"fmt"
+	"strings"
+	"strconv"
 	"time"
-	"path/filepath"
+	"fmt"
+	"github.com/opsgenie/opsgenie-lamp/cfg"
 )
+var verbose = false
 
-var cmdlog = log.New("opsgenie", "lamp")
-
-// The configuration file used by the client
-const SEP string = string(filepath.Separator)
-const CONF_FILE string = SEP + "conf" + SEP + "opsgenie-integration.conf"
-
-// Configuration is parsed from an 'ini' style file.
-// The key-value pairs are stored inside a struct data type.
-// TODO logging properties to be read
-type LampConfig struct {
-	Lamp struct {
-		ApiKey 	string
-		User 	string
-	}
-	Proxy struct {
-		Enabled		bool
-		Username 	string
-		Password 	string
-		Host 		string
-		Port 		int
-		Secured 	bool
-	}
-	Logging struct {
-		Enabled		bool
-		Level 		string
-		File 		string
-		Format 		string
-	}
-	Connection struct {
-		Usedefaults 	bool
-		Timeout			time.Duration
-		Retries 		int
+func printVerboseMessage(message string){
+	if verbose {
+		fmt.Println(message)
 	}
 }
 
-var lampCfg LampConfig
 // The 'Api key' is the most common parameter for all commands.
 // It is provided either on command line or on the configuration file.
 // The 'grabApiKey' function is used through all commands in purpose of
 // creating OpsGenie clients.
 func grabApiKey(c *gcli.Context) string {
-	if c.IsSet("apiKey") {
-		return c.String("apiKey")
+	if val, success := getVal("apiKey", c); success{
+		return val
 	} else {
-		return lampCfg.Lamp.ApiKey
+		apiKey := cfg.Get("apiKey")
+		printVerboseMessage("apiKey flag is not set in the command, reading apiKey from config..")
+		return apiKey
 	}
-	return ""
 }
 
 func grabUsername(c *gcli.Context) string {
-	if c.IsSet("user") {
-		return c.String("user")
-	} else {
-		return lampCfg.Lamp.User
+	if val, success := getVal("user", c); success{
+		return val
+	}  else {
+		return cfg.Get("user")
 	}
-	return ""
 }
 
-func getProxyConf() (proxy *ogcli.ClientProxyConfiguration) {
-	pc := new (ogcli.ClientProxyConfiguration)
-	pc.Host = lampCfg.Proxy.Host
-	pc.Port = lampCfg.Proxy.Port
-	if lampCfg.Proxy.Username != "" && lampCfg.Proxy.Password != "" {
-		pc.Username = lampCfg.Proxy.Username
-		pc.Password = lampCfg.Proxy.Password
+func getVal(argName string, c *gcli.Context) (string, bool){
+	if c.IsSet(argName){
+		arg := c.String(argName)
+		isEmpty(argName, arg, c)
+		return arg, true
 	}
-	pc.Secured = lampCfg.Proxy.Secured
+	return "", false
+}
+
+func isEmpty(argName string, arg string, c *gcli.Context) bool{
+	var prefix string
+	for _, name := range c.FlagNames(){
+		if len(name) == 1 {
+			prefix = "-"
+		}else{
+			prefix = "--"
+		}
+		if strings.Contains(arg, prefix + name){
+			fmt.Sprintf("Value of argument '%s' is empty", argName)
+			gcli.ShowCommandHelp(c, c.Command.Name)
+			os.Exit(1)
+		}
+	}
+	return false
+}
+
+func getProxyConf(host string, port int) (proxy *ogcli.ClientProxyConfiguration) {
+	printVerboseMessage("Configuring proxy settings with host " + host + " and port " + strconv.Itoa(port))
+	pc := new (ogcli.ClientProxyConfiguration)
+	pc.Protocol = cfg.Get("proxyProtocol")
+	pc.Host = host
+	pc.Port = port
+	username := cfg.Get("proxyUsername")
+	password := cfg.Get("proxyPassword")
+	if username != "" && password != "" {
+		pc.Username = username
+		pc.Password = password
+	}
 	return pc
 }
 
 func getConnectionConf() (connCfg *ogcli.HttpTransportSettings) {
+	printVerboseMessage("Configuring connection settings..")
 	cfg := new (ogcli.HttpTransportSettings)
-	cfg.ConnectionTimeout = lampCfg.Connection.Timeout
-	cfg.MaxRetryAttempts = lampCfg.Connection.Retries
+	reqTimeout := parseDuration("requestTimeout")
+	if reqTimeout != 0{
+		cfg.RequestTimeout = reqTimeout
+	}
+	connTimeout := parseDuration("connectionTimeout")
+	if connTimeout != 0{
+		cfg.ConnectionTimeout = connTimeout
+	}
 	return cfg
+}
+
+func parseDuration(key string) time.Duration{
+	if strDuration := cfg.Get(key); strDuration != "" {
+		printVerboseMessage("Will try to parse [" + key + "] with value [" + strDuration + "] from string to time duration in seconds..")
+		var reqTimeout time.Duration
+		var err error
+		if strings.HasSuffix(strDuration,"s"){
+			reqTimeout, err = time.ParseDuration(strDuration)
+		}else{
+			reqTimeout, err = time.ParseDuration(strDuration + "s")
+		}
+		if err != nil{
+			printVerboseMessage("Could not parse " + strDuration + " from string to time duration, opsgenie client will use default value.")
+			return 0
+		}
+		return reqTimeout
+	}else{
+		printVerboseMessage("Could not parse [" + key + "] with value [" + strDuration + "].")
+		return 0
+	}
+}
+
+func initialize(c *gcli.Context) * ogcli.OpsGenieClient{
+	if c.IsSet("v"){
+		verbose = true
+		printVerboseMessage("Will execute command in verbose mode.")
+	}
+	readConfigFile(c)
+	apiKey := grabApiKey(c)
+	cli := new (ogcli.OpsGenieClient)
+	cli.SetApiKey(apiKey)
+	if apiUrl := cfg.Get("opsgenie.api.url"); apiUrl != "" {
+		cli.SetOpsGenieApiUrl(apiUrl)
+	}
+	proxyHost := cfg.Get("proxyHost")
+	proxyPort, err := strconv.Atoi(cfg.Get("proxyPort"))
+	if err == nil && proxyPort != 0 && proxyHost != "" {
+		cli.SetClientProxyConfiguration(getProxyConf(proxyHost, proxyPort))
+	}
+	cli.SetHttpTransportSettings(getConnectionConf())
+	return cli
 }
 
 // In order to interact with the Alert API, one must handle an AlertClient.
 // The 'NewAlertClient' function creates and returns an instance of that type.
-func NewAlertClient(apiKey string) (*ogcli.OpsGenieAlertClient, error) {
-	cli := new (ogcli.OpsGenieClient)
-	cli.SetApiKey(apiKey)
-	if lampCfg.Proxy.Enabled {
-		cli.SetClientProxyConfiguration( getProxyConf() )
-	}
-	if !lampCfg.Connection.Usedefaults {
-		cli.SetHttpTransportSettings( getConnectionConf() )
-	}
+func NewAlertClient(c *gcli.Context) (*ogcli.OpsGenieAlertClient, error) {
+	cli := initialize(c)
 	alertCli, cliErr := cli.Alert()
 	
 	if cliErr != nil {
-		return nil, errors.New("Can not create the alert client")
-	}	
+		message := "Can not create the alert client. " + cliErr.Error()
+		fmt.Println(message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Alert Client created..")
 	return alertCli, nil
 }
 // In order to interact with the Heartbeat API, one must handle a HeartbeatClient.
 // The 'NewHeartbeatClient' function creates and returns an instance of that type.
-func NewHeartbeatClient(apiKey string) (*ogcli.OpsGenieHeartbeatClient, error) {
-	cli := new (ogcli.OpsGenieClient)
-	cli.SetApiKey(apiKey)
-	if lampCfg.Proxy.Enabled {
-		cli.SetClientProxyConfiguration( getProxyConf() )
-	}	
-	if !lampCfg.Connection.Usedefaults {
-		cli.SetHttpTransportSettings( getConnectionConf() )
-	}
+func NewHeartbeatClient(c *gcli.Context) (*ogcli.OpsGenieHeartbeatClient, error) {
+	cli := initialize(c)
 	hbCli, cliErr := cli.Heartbeat()
 	
 	if cliErr != nil {
-		return nil, errors.New("Can not create the heartbeat client")
-	}	
+		message := "Can not create the heartbeat client. " + cliErr.Error()
+		fmt.Println(message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Heartbeat Client created..")
 	return hbCli, nil
 }
 // In order to interact with the Integration API, one must handle an IntegrationClient.
 // The 'NewIntegrationClient' function creates and returns an instance of that type.
-func NewIntegrationClient(apiKey string) (*ogcli.OpsGenieIntegrationClient, error) {
-	cli := new (ogcli.OpsGenieClient)
-	cli.SetApiKey(apiKey)
-	if lampCfg.Proxy.Enabled {
-		cli.SetClientProxyConfiguration( getProxyConf() )
-	}	
-	if !lampCfg.Connection.Usedefaults {
-		cli.SetHttpTransportSettings( getConnectionConf() )
-	}
+func NewIntegrationClient(c *gcli.Context) (*ogcli.OpsGenieIntegrationClient, error) {
+	cli := initialize(c)
 	intCli, cliErr := cli.Integration()
 	
 	if cliErr != nil {
-		return nil, errors.New("Can not create the integration client")
-	}	
+		message := "Can not create the integration client. " + cliErr.Error()
+		fmt.Println(message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Integration Client created..")
 	return intCli, nil
 }
 // In order to interact with the Policy API, one must handle a PolicyClient.
 // The 'NewPolicyClient' function creates and returns an instance of that type.
-func NewPolicyClient(apiKey string) (*ogcli.OpsGeniePolicyClient, error) {
-	cli := new (ogcli.OpsGenieClient)
-	cli.SetApiKey(apiKey)
-	if lampCfg.Proxy.Enabled {
-		cli.SetClientProxyConfiguration( getProxyConf() )
-	}	
-	if !lampCfg.Connection.Usedefaults {
-		cli.SetHttpTransportSettings( getConnectionConf() )
-	}
+func NewPolicyClient(c *gcli.Context) (*ogcli.OpsGeniePolicyClient, error) {
+	cli := initialize(c)
 	polCli, cliErr := cli.Policy()
 	
 	if cliErr != nil {
-		return nil, errors.New("Can not create the policy client")
-	}	
+		message := "Can not create the policy client. " + cliErr.Error()
+		fmt.Println(message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Policy Client created..")
 	return polCli, nil
 }
 // The 'getAlert' command returns a GetAlertResponse object. 
@@ -181,7 +214,7 @@ func NewPolicyClient(apiKey string) (*ogcli.OpsGeniePolicyClient, error) {
 func ResultToYaml(data interface{}) (string, error) {
 	d, err := yaml.Marshal(&data)
     if err != nil {
-    	return "", errors.New("Can not marshal the response into YAML format")
+    	return "", errors.New("Can not marshal the response into YAML format. " + err.Error())
    	}
    	return string(d), nil
 }
@@ -195,51 +228,25 @@ func ResultToJson(data interface{}, pretty bool) (string, error){
 	if pretty {
 		b, err := json.MarshalIndent(data, "", "    ")
 		if err != nil {
-			return "", errors.New("Can not marshal the response into JSON format")
+			return "", errors.New("Can not marshal the response into JSON format. " + err.Error() )
 		}		
 		return string(b), nil
 	} else {
 		b, err := json.Marshal(data)
 		if err != nil {
-			return "", errors.New("Can not marshal the response into JSON format")
+			return "", errors.New("Can not marshal the response into JSON format" + err.Error())
 		}		
 		return string(b), nil
 	}
 	return "", nil
 }
-// "init" is a special function that loads in whenever the 'command' package is
-// first allocated in memory. Therefore, it has the lines of instructions to
-// initialize the program. Here, it is responsible for reading the configuration 
-// into the configuration struct data.
-func init() {
-	// getting the environment variable
-	if os.Getenv("LAMP_HOME") == ""{
-		fmt.Println("LAMP_HOME environment variable is not set!")
-		os.Exit(1)
+
+func readConfigFile(c *gcli.Context){
+	cfg.Verbose = verbose
+	if val, success := getVal("config", c); success{
+		cfg.LoadConfigFromGivenPath(val)
+	} else {
+		cfg.LoadConfiguration()
 	}
-	conf_file_path := os.Getenv("LAMP_HOME") + CONF_FILE
-	err := gcfg.ReadFileInto(&lampCfg, conf_file_path)	
-	if err != nil {
-		fmt.Println("Can not read the lamp configuration file!")
-		os.Exit(1)
-	}
-	// configuring the logger - l4g (log4go)
-	severity, _ := log.LvlFromString(lampCfg.Logging.Level)	
-	var outFmt log.Format
-	switch lampCfg.Logging.Format {
-		case "terminal": 
-			outFmt = log.TerminalFormat()
-			break
-		case "json": 
-			outFmt = log.JsonFormat()
-			break
-		case "jsonp": 
-			outFmt = log.JsonFormatEx(true, true)
-			break
-		default:
-			outFmt = log.LogfmtFormat()
-	}
-	cmdlog.SetHandler(log.MultiHandler(
-    	log.StreamHandler(os.Stdout, outFmt),
-    	log.LvlFilterHandler(severity, log.Must.FileHandler(lampCfg.Logging.File, outFmt))))
 }
+
