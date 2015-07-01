@@ -1,18 +1,18 @@
 // Copyright 2015 OpsGenie. All rights reserved.
-// Use of this source code is governed by a Apache Software 
+// Use of this source code is governed by a Apache Software
 // license that can be found in the LICENSE file.
 
 package command
 
-import(
+import (
 	// "fmt"
 	gcli "github.com/codegangsta/cli"
 	hb "github.com/opsgenie/opsgenie-go-sdk/heartbeat"
 	// ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
 	// "strings"
 	// "errors"
-	"os"
 	"fmt"
+	"os"
 )
 
 func HeartbeatAction(c *gcli.Context) {
@@ -22,7 +22,7 @@ func HeartbeatAction(c *gcli.Context) {
 	}
 
 	req := hb.SendHeartbeatRequest{}
-	if val, success := getVal("name", c); success{
+	if val, success := getVal("name", c); success {
 		req.Name = val
 	}
 
@@ -34,5 +34,5 @@ func HeartbeatAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 	printVerboseMessage("Send heartbeat successfully")
-	fmt.Sprintf("heartbeat=%d",response.Heartbeat)
+	fmt.Sprintf("heartbeat=%d", response.Heartbeat)
 }

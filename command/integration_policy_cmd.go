@@ -1,31 +1,31 @@
 // Copyright 2015 OpsGenie. All rights reserved.
-// Use of this source code is governed by a Apache Software 
+// Use of this source code is governed by a Apache Software
 // license that can be found in the LICENSE file.
 
 package command
 
-import(
+import (
+	"fmt"
 	gcli "github.com/codegangsta/cli"
 	"github.com/opsgenie/opsgenie-go-sdk/integration"
 	"github.com/opsgenie/opsgenie-go-sdk/policy"
 	"os"
-	"fmt"
 )
 
 func EnableAction(c *gcli.Context) {
-	if val, success := getVal("type", c); success{
+	if val, success := getVal("type", c); success {
 		switch val {
 		case "policy":
-			cli, err := NewPolicyClient( c )
+			cli, err := NewPolicyClient(c)
 			if err != nil {
 				os.Exit(1)
 			}
 
 			req := policy.EnablePolicyRequest{}
-			if val, success := getVal("id", c); success{
+			if val, success := getVal("id", c); success {
 				req.Id = val
 			}
-			if val, success := getVal("name", c); success{
+			if val, success := getVal("name", c); success {
 				req.Name = val
 			}
 			printVerboseMessage("Enable policy request prepared from flags, sending request to OpsGenie..")
@@ -37,16 +37,16 @@ func EnableAction(c *gcli.Context) {
 			fmt.Println("Policy enabled successfuly")
 
 		case "integration":
-			cli, err := NewIntegrationClient( c )
+			cli, err := NewIntegrationClient(c)
 			if err != nil {
 				os.Exit(1)
 			}
 
 			req := integration.EnableIntegrationRequest{}
-			if val, success := getVal("id", c); success{
+			if val, success := getVal("id", c); success {
 				req.Id = val
 			}
-			if val, success := getVal("name", c); success{
+			if val, success := getVal("name", c); success {
 				req.Name = val
 			}
 			printVerboseMessage("Enable integration request prepared from flags, sending request to OpsGenie..")
@@ -65,19 +65,19 @@ func EnableAction(c *gcli.Context) {
 }
 
 func DisableAction(c *gcli.Context) {
-	if val, success := getVal("type", c); success{
+	if val, success := getVal("type", c); success {
 		switch val {
 		case "policy":
-			cli, err := NewPolicyClient( c )
+			cli, err := NewPolicyClient(c)
 			if err != nil {
 				os.Exit(1)
 			}
 
 			req := policy.DisablePolicyRequest{}
-			if val, success := getVal("id", c); success{
+			if val, success := getVal("id", c); success {
 				req.Id = val
 			}
-			if val, success := getVal("name", c); success{
+			if val, success := getVal("name", c); success {
 				req.Name = val
 			}
 			printVerboseMessage("Disable policy request prepared from flags, sending request to OpsGenie..")
@@ -89,16 +89,16 @@ func DisableAction(c *gcli.Context) {
 			fmt.Println("Policy disabled successfuly")
 
 		case "integration":
-			cli, err := NewIntegrationClient( c )
+			cli, err := NewIntegrationClient(c)
 			if err != nil {
 				os.Exit(1)
 			}
 
 			req := integration.DisableIntegrationRequest{}
-			if val, success := getVal("id", c); success{
+			if val, success := getVal("id", c); success {
 				req.Id = val
 			}
-			if val, success := getVal("name", c); success{
+			if val, success := getVal("name", c); success {
 				req.Name = val
 			}
 			printVerboseMessage("Disable integration request prepared from flags, sending request to OpsGenie..")

@@ -1,40 +1,40 @@
 // Copyright 2015 OpsGenie. All rights reserved.
-// Use of this source code is governed by a Apache Software 
+// Use of this source code is governed by a Apache Software
 // license that can be found in the LICENSE file.
 
 package command
 
-import(
+import (
+	"fmt"
 	gcli "github.com/codegangsta/cli"
 	"github.com/opsgenie/opsgenie-go-sdk/alerts"
-	"strings"
 	"os"
-	"fmt"
+	"strings"
 )
 
 func CreateAlertAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 	req := alerts.CreateAlertRequest{}
 
-	if val, success := getVal("message", c); success{
+	if val, success := getVal("message", c); success {
 		req.Message = val
 	}
-	if val, success := getVal("teams", c); success{
-		req.Teams = strings.Split(val, "," )
+	if val, success := getVal("teams", c); success {
+		req.Teams = strings.Split(val, ",")
 	}
 	if val, success := getVal("recipients", c); success {
-		req.Recipients = strings.Split(val, "," )
+		req.Recipients = strings.Split(val, ",")
 	}
-	if val, success := getVal("alias", c); success  {
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
 	if val, success := getVal("actions", c); success {
 		req.Actions = strings.Split(val, ",")
 	}
-	if val, success := getVal("source", c); success{
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("tags", c); success {
@@ -46,11 +46,11 @@ func CreateAlertAction(c *gcli.Context) {
 	if val, success := getVal("entity", c); success {
 		req.Entity = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("note", c); success{
+	req.User = grabUsername(c)
+	if val, success := getVal("note", c); success {
 		req.Note = val
 	}
-	if c.IsSet("D"){
+	if c.IsSet("D") {
 		req.Details = extractDetailsFromCommand(c)
 	}
 
@@ -65,15 +65,15 @@ func CreateAlertAction(c *gcli.Context) {
 	fmt.Println("alertId=" + resp.AlertId)
 }
 
-func extractDetailsFromCommand( c *gcli.Context)  map[string]string{
+func extractDetailsFromCommand(c *gcli.Context) map[string]string {
 	details := make(map[string]string)
 	extraProps := c.StringSlice("D")
-	for i:=0; i< len(extraProps); i++{
+	for i := 0; i < len(extraProps); i++ {
 		prop := extraProps[i]
-		if !isEmpty("D",prop, c) && strings.Contains(prop, "="){
-			p := strings.Split(prop,"=")
+		if !isEmpty("D", prop, c) && strings.Contains(prop, "=") {
+			p := strings.Split(prop, "=")
 			details[p[0]] = strings.Join(p[1:], "=")
-		}else {
+		} else {
 			fmt.Sprintf("Dynamic parameters should have the value of the form a=b, but got:" + prop)
 			gcli.ShowCommandHelp(c, c.Command.Name)
 			os.Exit(1)
@@ -84,15 +84,15 @@ func extractDetailsFromCommand( c *gcli.Context)  map[string]string{
 }
 
 func GetAlertAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 	req := alerts.GetAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
 
@@ -107,38 +107,38 @@ func GetAlertAction(c *gcli.Context) {
 	outputFormat := strings.ToLower(c.String("output-format"))
 	printVerboseMessage("Got Alert successfully, and will print as " + outputFormat)
 	switch outputFormat {
-		case "yaml": 
-			output, err := ResultToYaml(resp)
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			fmt.Println(output)
-		default:
-			isPretty := c.IsSet("pretty")
-			output, err := ResultToJson(resp, isPretty)
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			fmt.Println(output)
+	case "yaml":
+		output, err := ResultToYaml(resp)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		fmt.Println(output)
+	default:
+		isPretty := c.IsSet("pretty")
+		output, err := ResultToJson(resp, isPretty)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		fmt.Println(output)
 	}
 }
 
 func AttachFileAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.AttachFileAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	if val, success := getVal("attachment", c); success{
+	if val, success := getVal("attachment", c); success {
 		f, err := os.Open(val)
 		defer f.Close()
 		if err != nil {
@@ -148,12 +148,12 @@ func AttachFileAction(c *gcli.Context) {
 		req.Attachment = f
 	}
 
-	if val, success := getVal("indexFile", c); success  {
+	if val, success := getVal("indexFile", c); success {
 		req.IndexFile = val
 	}
 
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -172,20 +172,20 @@ func AttachFileAction(c *gcli.Context) {
 }
 
 func AcknowledgeAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.AcknowledgeAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -203,25 +203,24 @@ func AcknowledgeAction(c *gcli.Context) {
 	printVerboseMessage("Alert acknowledged successfully.")
 }
 
-
 func RenotifyAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.RenotifyAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	if val, success := getVal("recipients", c); success  {
+	if val, success := getVal("recipients", c); success {
 		req.Recipients = strings.Split(val, ",")
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -239,20 +238,20 @@ func RenotifyAction(c *gcli.Context) {
 }
 
 func TakeOwnershipAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.TakeOwnershipAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -270,23 +269,23 @@ func TakeOwnershipAction(c *gcli.Context) {
 }
 
 func AssignOwnerAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.AssignOwnerAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	if val, success := getVal("owner", c); success{
+	if val, success := getVal("owner", c); success {
 		req.Owner = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -305,23 +304,23 @@ func AssignOwnerAction(c *gcli.Context) {
 }
 
 func AddTeamAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.AddTeamAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	if val, success := getVal("team", c); success{
+	if val, success := getVal("team", c); success {
 		req.Team = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -338,25 +337,24 @@ func AddTeamAction(c *gcli.Context) {
 	printVerboseMessage("Team added successfully.")
 }
 
-
 func AddRecipientAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.AddRecipientAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	if val, success := getVal("recipient", c); success{
+	if val, success := getVal("recipient", c); success {
 		req.Recipient = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -374,21 +372,21 @@ func AddRecipientAction(c *gcli.Context) {
 }
 
 func AddNoteAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.AddNoteAlertRequest{}
 
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -406,25 +404,25 @@ func AddNoteAction(c *gcli.Context) {
 }
 
 func ExecuteActionAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.ExecuteActionAlertRequest{}
 
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
 	action, success := getVal("action", c)
-	if success{
+	if success {
 		req.Action = action
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
@@ -443,27 +441,27 @@ func ExecuteActionAction(c *gcli.Context) {
 }
 
 func CloseAlertAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.CloseAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 	if val, success := getVal("note", c); success {
 		req.Note = val
 	}
 	if val, success := getVal("notify", c); success {
-		req.Notify = strings.Split(val, "," )
+		req.Notify = strings.Split(val, ",")
 	}
 
 	printVerboseMessage("Close alert request prepared from flags, sending request to OpsGenie..")
@@ -477,20 +475,20 @@ func CloseAlertAction(c *gcli.Context) {
 }
 
 func DeleteAlertAction(c *gcli.Context) {
-	cli, err := NewAlertClient( c )
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	req := alerts.DeleteAlertRequest{}
-	if val, success := getVal("id", c); success{
+	if val, success := getVal("id", c); success {
 		req.Id = val
 	}
-	if val, success := getVal("alias", c); success{
+	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
-	req.User = grabUsername(c);
-	if val, success := getVal("source", c); success  {
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 
