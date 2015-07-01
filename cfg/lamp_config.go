@@ -2,12 +2,13 @@ package cfg
 
 import (
 	"fmt"
-	"github.com/ccding/go-config-reader/config"
-	"github.com/cihub/seelog"
-	"github.com/opsgenie/opsgenie-go-sdk/logging"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/ccding/go-config-reader/config"
+	"github.com/cihub/seelog"
+	"github.com/opsgenie/opsgenie-go-sdk/logging"
 )
 
 const (

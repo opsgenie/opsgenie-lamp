@@ -6,10 +6,11 @@ package command
 
 import (
 	"fmt"
+	"os"
+
 	gcli "github.com/codegangsta/cli"
 	"github.com/opsgenie/opsgenie-go-sdk/integration"
 	"github.com/opsgenie/opsgenie-go-sdk/policy"
-	"os"
 )
 
 func EnableAction(c *gcli.Context) {

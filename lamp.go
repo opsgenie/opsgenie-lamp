@@ -6,9 +6,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	gcli "github.com/codegangsta/cli"
 	"github.com/opsgenie/opsgenie-lamp/command"
-	"os"
 )
 
 const LAMP_VERSION string = "1.0.0"

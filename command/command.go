@@ -15,14 +15,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	gcli "github.com/codegangsta/cli"
-	ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
-	"github.com/opsgenie/opsgenie-lamp/cfg"
-	yaml "gopkg.in/yaml.v2"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	gcli "github.com/codegangsta/cli"
+	ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
+	"github.com/opsgenie/opsgenie-lamp/cfg"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var verbose = false

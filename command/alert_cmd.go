@@ -6,10 +6,11 @@ package command
 
 import (
 	"fmt"
-	gcli "github.com/codegangsta/cli"
-	"github.com/opsgenie/opsgenie-go-sdk/alerts"
 	"os"
 	"strings"
+
+	gcli "github.com/codegangsta/cli"
+	"github.com/opsgenie/opsgenie-go-sdk/alerts"
 )
 
 func CreateAlertAction(c *gcli.Context) {
