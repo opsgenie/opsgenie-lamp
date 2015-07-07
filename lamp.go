@@ -83,7 +83,7 @@ func getCreateAlertCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "createAlert",
 		Flags:  flags,
-		Usage:  "Create alerts in OpsGenie",
+		Usage:  "Creates an alert at OpsGenie",
 		Action: command.CreateAlertAction,
 	}
 	return cmd
@@ -112,7 +112,7 @@ func getGetAlertCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "getAlert",
 		Flags:  flags,
-		Usage:  "Get alerts details from OpsGenie",
+		Usage:  "Gets an alert content from OpsGenie",
 		Action: command.GetAlertAction,
 	}
 	return cmd
@@ -148,7 +148,7 @@ func getAttachFileCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "attachFile",
 		Flags:  flags,
-		Usage:  "Attach file to alerts in OpsGenie",
+		Usage:  "Attaches files to an alert",
 		Action: command.AttachFileAction,
 	}
 	return cmd
@@ -176,7 +176,7 @@ func getAcknowledgeCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "acknowledge",
 		Flags:  flags,
-		Usage:  "Acknowledge an alert in OpsGenie",
+		Usage:  "Acknowledges an alert at OpsGenie",
 		Action: command.AcknowledgeAction,
 	}
 	return cmd
@@ -209,7 +209,7 @@ func getRenotifyCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "renotify",
 		Flags:  flags,
-		Usage:  "Renotify alert recipients. If no recipient specified, all existing alert recipients will be renotified.",
+		Usage:  "Renotifies recipients at OpsGenie.",
 		Action: command.RenotifyAction,
 	}
 	return cmd
@@ -237,7 +237,7 @@ func getTakeOwnershipCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "takeOwnership",
 		Flags:  flags,
-		Usage:  "Take ownership of an alert in OpsGenie",
+		Usage:  "Takes the ownership of an alert at OpsGenie.",
 		Action: command.TakeOwnershipAction,
 	}
 	return cmd
@@ -269,7 +269,7 @@ func getAssignOwnerCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "assign",
 		Flags:  flags,
-		Usage:  "Assin the  ownership of an alert to the specified user in OpsGenie",
+		Usage:  "Assigns the ownership of an alert to the specified user.",
 		Action: command.AssignOwnerAction,
 	}
 	return cmd
@@ -301,7 +301,7 @@ func getAddTeamCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addTeam",
 		Flags:  flags,
-		Usage:  "Add a new team to an alert in OpsGenie",
+		Usage:  "Adds a new team to an alert.",
 		Action: command.AddTeamAction,
 	}
 	return cmd
@@ -333,7 +333,7 @@ func getAddRecipientCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addRecipient",
 		Flags:  flags,
-		Usage:  "Add a new recipient to an alert in OpsGenie",
+		Usage:  "Adds a new recipient to an alert.",
 		Action: command.AddRecipientAction,
 	}
 	return cmd
@@ -361,7 +361,7 @@ func getAddNoteCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addNote",
 		Flags:  flags,
-		Usage:  "Add notes to an alert in OpsGenie",
+		Usage:  "Adds a user comment for an alert.",
 		Action: command.AddNoteAction,
 	}
 	return cmd
@@ -393,7 +393,7 @@ func getExecuteActionCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "executeAction",
 		Flags:  flags,
-		Usage:  "Execute a custom action on an alert in OpsGenie",
+		Usage:  "Executes alert actions at OpsGenie",
 		Action: command.ExecuteActionAction,
 	}
 	return cmd
@@ -425,7 +425,7 @@ func getCloseAlertCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "closeAlert",
 		Flags:  flags,
-		Usage:  "Closes an alert in OpsGenie",
+		Usage:  "Closes an alert at OpsGenie",
 		Action: command.CloseAlertAction,
 	}
 	return cmd
@@ -445,7 +445,7 @@ func getDeleteAlertCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "deleteAlert",
 		Flags:  flags,
-		Usage:  "Deletes an alert in OpsGenie",
+		Usage:  "Deletes an alert at OpsGenie.",
 		Action: command.DeleteAlertAction,
 	}
 	return cmd
@@ -461,7 +461,7 @@ func getHeartbeatCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "heartbeat",
 		Flags:  flags,
-		Usage:  "Sends heartbeats to OpsGenie",
+		Usage:  "Sends heartbeat to OpsGenie",
 		Action: command.HeartbeatAction,
 	}
 	return cmd
@@ -485,7 +485,7 @@ func getEnableCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "enable",
 		Flags:  flags,
-		Usage:  "Enable integrations and policies",
+		Usage:  "Enables OpsGenie Integration and Policy.",
 		Action: command.EnableAction,
 	}
 	return cmd
@@ -509,18 +509,8 @@ func getDisableCommand() gcli.Command {
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "disable",
 		Flags:  flags,
-		Usage:  "Disable integrations and policies",
+		Usage:  "Disables OpsGenie Integration and Policy.",
 		Action: command.DisableAction,
-	}
-	return cmd
-}
-
-func getHelpCommand() gcli.Command {
-	cmd := gcli.Command{Name: "help",
-		Action: func(c *gcli.Context) {
-			gcli.ShowAppHelp(c)
-			os.Exit(0)
-		},
 	}
 	return cmd
 }
@@ -543,7 +533,6 @@ func initCommands(app *gcli.App) {
 		getHeartbeatCommand(),
 		getEnableCommand(),
 		getDisableCommand(),
-		getHelpCommand(),
 	}
 }
 
@@ -554,11 +543,11 @@ func main() {
 	app.Usage = "Command line interface for OpsGenie"
 	app.Author = "OpsGenie"
 	app.Action = func(c *gcli.Context) {
-		fmt.Println("Run 'lamp help' for the options")
+		fmt.Printf("Run 'lamp help' for the options\n")
 	}
 	initCommands(app)
 	err := app.Run(os.Args)
 	if err != nil {
-		fmt.Println("Error occured while executing command: " + err.Error())
+		fmt.Printf("Error occured while executing command: %s\n", err.Error())
 	}
 }

@@ -32,10 +32,10 @@ func EnableAction(c *gcli.Context) {
 			printVerboseMessage("Enable policy request prepared from flags, sending request to OpsGenie..")
 			_, err = cli.Enable(req)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Printf(err.Error() + "\n")
 				os.Exit(1)
 			}
-			fmt.Println("Policy enabled successfuly")
+			fmt.Printf("Policy enabled successfuly\n")
 
 		case "integration":
 			cli, err := NewIntegrationClient(c)
@@ -53,12 +53,12 @@ func EnableAction(c *gcli.Context) {
 			printVerboseMessage("Enable integration request prepared from flags, sending request to OpsGenie..")
 			_, err = cli.Enable(req)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Printf(err.Error() + "\n")
 				os.Exit(1)
 			}
-			fmt.Println("Integration enabled successfuly")
+			fmt.Printf("Integration enabled successfuly\n")
 		default:
-			fmt.Sprintf("Invalid type option %s, specify either integration or policy", val)
+			fmt.Printf("Invalid type option %s, specify either integration or policy\n", val)
 			gcli.ShowCommandHelp(c, "enable")
 			os.Exit(1)
 		}
@@ -84,10 +84,10 @@ func DisableAction(c *gcli.Context) {
 			printVerboseMessage("Disable policy request prepared from flags, sending request to OpsGenie..")
 			_, err = cli.Disable(req)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Printf(err.Error() + "\n")
 				os.Exit(1)
 			}
-			fmt.Println("Policy disabled successfuly")
+			fmt.Printf("Policy disabled successfuly\n")
 
 		case "integration":
 			cli, err := NewIntegrationClient(c)
@@ -105,12 +105,12 @@ func DisableAction(c *gcli.Context) {
 			printVerboseMessage("Disable integration request prepared from flags, sending request to OpsGenie..")
 			_, err = cli.Disable(req)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Printf(err.Error() + "\n")
 				os.Exit(1)
 			}
-			fmt.Println("Integration disabled successfuly")
+			fmt.Printf("Integration disabled successfuly\n")
 		default:
-			fmt.Sprintf("Invalid type option %s, specify either integration or policy", val)
+			fmt.Printf("Invalid type option %s, specify either integration or policy\n", val)
 			gcli.ShowCommandHelp(c, "disable")
 			os.Exit(1)
 		}

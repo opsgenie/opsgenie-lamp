@@ -30,9 +30,9 @@ func HeartbeatAction(c *gcli.Context) {
 
 	response, err := cli.Send(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Send heartbeat successfully")
-	fmt.Sprintf("heartbeat=%d", response.Heartbeat)
+	fmt.Printf("heartbeat=%d\n", response.Heartbeat)
 }

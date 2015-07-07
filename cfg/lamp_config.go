@@ -22,14 +22,14 @@ var Verbose = false
 
 func printVerboseMessage(message string) {
 	if Verbose {
-		fmt.Println(message)
+		fmt.Printf(message + "\n")
 	}
 }
 
 func getLampHome() string {
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		fmt.Println("Error occurred while getting lamp home path" + err.Error())
+		fmt.Printf("Error occurred while getting lamp home path: %s\n", err.Error())
 		return ""
 	}
 	return dir + SEP
@@ -98,7 +98,7 @@ func configureLog() {
 	logConfig := getTemplate(outPath, level)
 	logger, err := seelog.LoggerFromConfigAsBytes([]byte(logConfig))
 	if err != nil {
-		fmt.Println("Error occured while configuring logger: " + err.Error())
+		fmt.Printf("Error occured while configuring logger: %s\n", err.Error())
 	}
 	logging.UseLogger(logger)
 }

@@ -30,7 +30,7 @@ var verbose = false
 
 func printVerboseMessage(message string) {
 	if verbose {
-		fmt.Println(message)
+		fmt.Printf(message + "\n")
 	}
 }
 
@@ -74,7 +74,7 @@ func isEmpty(argName string, arg string, c *gcli.Context) bool {
 			prefix = "--"
 		}
 		if strings.Contains(arg, prefix+name) {
-			fmt.Sprintf("Value of argument '%s' is empty", argName)
+			fmt.Printf("Value of argument '%s' is empty\n", argName)
 			gcli.ShowCommandHelp(c, c.Command.Name)
 			os.Exit(1)
 		}
@@ -161,7 +161,7 @@ func NewAlertClient(c *gcli.Context) (*ogcli.OpsGenieAlertClient, error) {
 
 	if cliErr != nil {
 		message := "Can not create the alert client. " + cliErr.Error()
-		fmt.Println(message)
+		fmt.Printf(message + "\n")
 		return nil, errors.New(message)
 	}
 	printVerboseMessage("Alert Client created..")
@@ -176,7 +176,7 @@ func NewHeartbeatClient(c *gcli.Context) (*ogcli.OpsGenieHeartbeatClient, error)
 
 	if cliErr != nil {
 		message := "Can not create the heartbeat client. " + cliErr.Error()
-		fmt.Println(message)
+		fmt.Printf(message + "\n")
 		return nil, errors.New(message)
 	}
 	printVerboseMessage("Heartbeat Client created..")
@@ -191,7 +191,7 @@ func NewIntegrationClient(c *gcli.Context) (*ogcli.OpsGenieIntegrationClient, er
 
 	if cliErr != nil {
 		message := "Can not create the integration client. " + cliErr.Error()
-		fmt.Println(message)
+		fmt.Printf(message + "\n")
 		return nil, errors.New(message)
 	}
 	printVerboseMessage("Integration Client created..")
@@ -206,7 +206,7 @@ func NewPolicyClient(c *gcli.Context) (*ogcli.OpsGeniePolicyClient, error) {
 
 	if cliErr != nil {
 		message := "Can not create the policy client. " + cliErr.Error()
-		fmt.Println(message)
+		fmt.Printf(message + "\n")
 		return nil, errors.New(message)
 	}
 	printVerboseMessage("Policy Client created..")

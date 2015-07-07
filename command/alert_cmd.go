@@ -59,11 +59,11 @@ func CreateAlertAction(c *gcli.Context) {
 
 	resp, err := cli.Create(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Alert created successfully.")
-	fmt.Println("alertId=" + resp.AlertId)
+	fmt.Printf("alertId=%s\n", resp.AlertId)
 }
 
 func extractDetailsFromCommand(c *gcli.Context) map[string]string {
@@ -75,7 +75,7 @@ func extractDetailsFromCommand(c *gcli.Context) map[string]string {
 			p := strings.Split(prop, "=")
 			details[p[0]] = strings.Join(p[1:], "=")
 		} else {
-			fmt.Sprintf("Dynamic parameters should have the value of the form a=b, but got:" + prop)
+			fmt.Printf("Dynamic parameters should have the value of the form a=b, but got: %s\n", prop)
 			gcli.ShowCommandHelp(c, c.Command.Name)
 			os.Exit(1)
 		}
@@ -101,7 +101,7 @@ func GetAlertAction(c *gcli.Context) {
 
 	resp, err := cli.Get(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 
@@ -111,18 +111,18 @@ func GetAlertAction(c *gcli.Context) {
 	case "yaml":
 		output, err := ResultToYaml(resp)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Printf(err.Error() + "\n")
 			os.Exit(1)
 		}
-		fmt.Println(output)
+		fmt.Printf(output + "\n")
 	default:
 		isPretty := c.IsSet("pretty")
 		output, err := ResultToJson(resp, isPretty)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Printf(err.Error() + "\n")
 			os.Exit(1)
 		}
-		fmt.Println(output)
+		fmt.Printf(output + "\n")
 	}
 }
 
@@ -143,7 +143,7 @@ func AttachFileAction(c *gcli.Context) {
 		f, err := os.Open(val)
 		defer f.Close()
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Printf(err.Error() + "\n")
 			os.Exit(1)
 		}
 		req.Attachment = f
@@ -165,7 +165,7 @@ func AttachFileAction(c *gcli.Context) {
 
 	_, err = cli.AttachFile(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 
@@ -197,7 +197,7 @@ func AcknowledgeAction(c *gcli.Context) {
 
 	_, err = cli.Acknowledge(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 
@@ -232,7 +232,7 @@ func RenotifyAction(c *gcli.Context) {
 
 	_, err = cli.Renotify(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Renotified successfully.")
@@ -263,7 +263,7 @@ func TakeOwnershipAction(c *gcli.Context) {
 
 	_, err = cli.TakeOwnership(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Ownership taken successfully.")
@@ -297,7 +297,7 @@ func AssignOwnerAction(c *gcli.Context) {
 
 	_, err = cli.AssignOwner(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 
@@ -332,7 +332,7 @@ func AddTeamAction(c *gcli.Context) {
 
 	_, err = cli.AddTeam(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Team added successfully.")
@@ -366,7 +366,7 @@ func AddRecipientAction(c *gcli.Context) {
 
 	_, err = cli.AddRecipient(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Recipient added successfully.")
@@ -398,7 +398,7 @@ func AddNoteAction(c *gcli.Context) {
 
 	_, err = cli.AddNote(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Note added successfully.")
@@ -434,11 +434,11 @@ func ExecuteActionAction(c *gcli.Context) {
 
 	resp, err := cli.ExecuteAction(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Action" + action + "executed successfully.")
-	fmt.Println("Action [" + action + "] result=" + resp.Result)
+	fmt.Printf("result=%s\n", resp.Result)
 }
 
 func CloseAlertAction(c *gcli.Context) {
@@ -469,7 +469,7 @@ func CloseAlertAction(c *gcli.Context) {
 
 	_, err = cli.Close(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 	printVerboseMessage("Alert closed successfully.")
@@ -497,7 +497,7 @@ func DeleteAlertAction(c *gcli.Context) {
 
 	_, err = cli.Delete(req)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error() + "\n")
 		os.Exit(1)
 	}
 
