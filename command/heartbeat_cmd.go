@@ -1,7 +1,3 @@
-// Copyright 2015 OpsGenie. All rights reserved.
-// Use of this source code is governed by a Apache Software
-// license that can be found in the LICENSE file.
-
 package command
 
 import (
@@ -15,6 +11,7 @@ import (
 	"os"
 )
 
+// HeartbeatAction sends an Heartbeat signal to OpsGenie.
 func HeartbeatAction(c *gcli.Context) {
 	cli, err := NewHeartbeatClient(c)
 	if err != nil {

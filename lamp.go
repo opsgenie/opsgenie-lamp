@@ -12,7 +12,7 @@ import (
 	"github.com/opsgenie/opsgenie-lamp/command"
 )
 
-const LAMP_VERSION string = "1.0.0"
+const lampVersion string = "1.0.0"
 
 var commonFlags = []gcli.Flag{
 	gcli.BoolFlag{
@@ -33,7 +33,7 @@ var commonFlags = []gcli.Flag{
 	},
 }
 
-func getCreateAlertCommand() gcli.Command {
+func createAlertCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "message",
@@ -89,7 +89,7 @@ func getCreateAlertCommand() gcli.Command {
 	return cmd
 }
 
-func getGetAlertCommand() gcli.Command {
+func getAlertCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -118,7 +118,7 @@ func getGetAlertCommand() gcli.Command {
 	return cmd
 }
 
-func getAttachFileCommand() gcli.Command {
+func attachFileCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -154,7 +154,7 @@ func getAttachFileCommand() gcli.Command {
 	return cmd
 }
 
-func getAcknowledgeCommand() gcli.Command {
+func acknowledgeCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -183,7 +183,7 @@ func getAcknowledgeCommand() gcli.Command {
 
 }
 
-func getRenotifyCommand() gcli.Command {
+func renotifyCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -215,7 +215,7 @@ func getRenotifyCommand() gcli.Command {
 	return cmd
 }
 
-func getTakeOwnershipCommand() gcli.Command {
+func takeOwnershipCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -243,7 +243,7 @@ func getTakeOwnershipCommand() gcli.Command {
 	return cmd
 }
 
-func getAssignOwnerCommand() gcli.Command {
+func assignOwnerCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -275,7 +275,7 @@ func getAssignOwnerCommand() gcli.Command {
 	return cmd
 }
 
-func getAddTeamCommand() gcli.Command {
+func addTeamCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -307,7 +307,7 @@ func getAddTeamCommand() gcli.Command {
 	return cmd
 }
 
-func getAddRecipientCommand() gcli.Command {
+func addRecipientCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -339,7 +339,7 @@ func getAddRecipientCommand() gcli.Command {
 	return cmd
 }
 
-func getAddNoteCommand() gcli.Command {
+func addNoteCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -367,7 +367,7 @@ func getAddNoteCommand() gcli.Command {
 	return cmd
 }
 
-func getExecuteActionCommand() gcli.Command {
+func executeActionCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -399,7 +399,7 @@ func getExecuteActionCommand() gcli.Command {
 	return cmd
 }
 
-func getCloseAlertCommand() gcli.Command {
+func closeAlertCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId,id",
@@ -431,7 +431,7 @@ func getCloseAlertCommand() gcli.Command {
 	return cmd
 }
 
-func getDeleteAlertCommand() gcli.Command {
+func deleteAlertCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
@@ -451,7 +451,7 @@ func getDeleteAlertCommand() gcli.Command {
 	return cmd
 }
 
-func getHeartbeatCommand() gcli.Command {
+func heartbeatCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "name",
@@ -467,7 +467,7 @@ func getHeartbeatCommand() gcli.Command {
 	return cmd
 }
 
-func getEnableCommand() gcli.Command {
+func enableCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "id",
@@ -491,7 +491,7 @@ func getEnableCommand() gcli.Command {
 	return cmd
 }
 
-func getDisableCommand() gcli.Command {
+func disableCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "id",
@@ -517,29 +517,29 @@ func getDisableCommand() gcli.Command {
 
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command{
-		getCreateAlertCommand(),
-		getGetAlertCommand(),
-		getAttachFileCommand(),
-		getAcknowledgeCommand(),
-		getRenotifyCommand(),
-		getTakeOwnershipCommand(),
-		getAssignOwnerCommand(),
-		getAddTeamCommand(),
-		getAddRecipientCommand(),
-		getAddNoteCommand(),
-		getExecuteActionCommand(),
-		getCloseAlertCommand(),
-		getDeleteAlertCommand(),
-		getHeartbeatCommand(),
-		getEnableCommand(),
-		getDisableCommand(),
+		createAlertCommand(),
+		getAlertCommand(),
+		attachFileCommand(),
+		acknowledgeCommand(),
+		renotifyCommand(),
+		takeOwnershipCommand(),
+		assignOwnerCommand(),
+		addTeamCommand(),
+		addRecipientCommand(),
+		addNoteCommand(),
+		executeActionCommand(),
+		closeAlertCommand(),
+		deleteAlertCommand(),
+		heartbeatCommand(),
+		enableCommand(),
+		disableCommand(),
 	}
 }
 
 func main() {
 	app := gcli.NewApp()
 	app.Name = "lamp"
-	app.Version = LAMP_VERSION
+	app.Version = lampVersion
 	app.Usage = "Command line interface for OpsGenie"
 	app.Author = "OpsGenie"
 	app.Action = func(c *gcli.Context) {

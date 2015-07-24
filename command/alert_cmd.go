@@ -1,7 +1,3 @@
-// Copyright 2015 OpsGenie. All rights reserved.
-// Use of this source code is governed by a Apache Software
-// license that can be found in the LICENSE file.
-
 package command
 
 import (
@@ -13,6 +9,7 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk/alerts"
 )
 
+// CreateAlertAction creates an alert at OpsGenie.
 func CreateAlertAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -63,7 +60,7 @@ func CreateAlertAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 	printVerboseMessage("Alert created successfully.")
-	fmt.Printf("alertId=%s\n", resp.AlertId)
+	fmt.Printf("alertId=%s\n", resp.AlertID)
 }
 
 func extractDetailsFromCommand(c *gcli.Context) map[string]string {
@@ -84,6 +81,7 @@ func extractDetailsFromCommand(c *gcli.Context) map[string]string {
 	return details
 }
 
+// GetAlertAction retrieves specified alert details from OpsGenie.
 func GetAlertAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -91,7 +89,7 @@ func GetAlertAction(c *gcli.Context) {
 	}
 	req := alerts.GetAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -109,7 +107,7 @@ func GetAlertAction(c *gcli.Context) {
 	printVerboseMessage("Got Alert successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
-		output, err := ResultToYaml(resp)
+		output, err := resultToYAML(resp)
 		if err != nil {
 			fmt.Printf(err.Error() + "\n")
 			os.Exit(1)
@@ -117,7 +115,7 @@ func GetAlertAction(c *gcli.Context) {
 		fmt.Printf(output + "\n")
 	default:
 		isPretty := c.IsSet("pretty")
-		output, err := ResultToJson(resp, isPretty)
+		output, err := resultToJSON(resp, isPretty)
 		if err != nil {
 			fmt.Printf(err.Error() + "\n")
 			os.Exit(1)
@@ -126,6 +124,7 @@ func GetAlertAction(c *gcli.Context) {
 	}
 }
 
+// AttachFileAction attaches a file to an alert at OpsGenie.
 func AttachFileAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -134,7 +133,7 @@ func AttachFileAction(c *gcli.Context) {
 
 	req := alerts.AttachFileAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -172,6 +171,7 @@ func AttachFileAction(c *gcli.Context) {
 	printVerboseMessage("File attached to alert successfully.")
 }
 
+// AcknowledgeAction acknowledges an alert at OpsGenie.
 func AcknowledgeAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -180,7 +180,7 @@ func AcknowledgeAction(c *gcli.Context) {
 
 	req := alerts.AcknowledgeAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -204,6 +204,7 @@ func AcknowledgeAction(c *gcli.Context) {
 	printVerboseMessage("Alert acknowledged successfully.")
 }
 
+// RenotifyAction re-notifies recipients at OpsGenie.
 func RenotifyAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -212,7 +213,7 @@ func RenotifyAction(c *gcli.Context) {
 
 	req := alerts.RenotifyAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -238,6 +239,7 @@ func RenotifyAction(c *gcli.Context) {
 	printVerboseMessage("Renotified successfully.")
 }
 
+// TakeOwnershipAction takes the ownership of an alert at OpsGenie.
 func TakeOwnershipAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -246,7 +248,7 @@ func TakeOwnershipAction(c *gcli.Context) {
 
 	req := alerts.TakeOwnershipAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -269,6 +271,7 @@ func TakeOwnershipAction(c *gcli.Context) {
 	printVerboseMessage("Ownership taken successfully.")
 }
 
+// AssignOwnerAction assigns the specified user as the owner of the alert at OpsGenie.
 func AssignOwnerAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -277,7 +280,7 @@ func AssignOwnerAction(c *gcli.Context) {
 
 	req := alerts.AssignOwnerAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -304,6 +307,7 @@ func AssignOwnerAction(c *gcli.Context) {
 	printVerboseMessage("Ownership assigned successfully.")
 }
 
+// AddTeamAction adds a team to an alert at OpsGenie.
 func AddTeamAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -312,7 +316,7 @@ func AddTeamAction(c *gcli.Context) {
 
 	req := alerts.AddTeamAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -338,6 +342,7 @@ func AddTeamAction(c *gcli.Context) {
 	printVerboseMessage("Team added successfully.")
 }
 
+// AddRecipientAction adds recipient to an alert at OpsGenie.
 func AddRecipientAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -346,7 +351,7 @@ func AddRecipientAction(c *gcli.Context) {
 
 	req := alerts.AddRecipientAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -372,6 +377,7 @@ func AddRecipientAction(c *gcli.Context) {
 	printVerboseMessage("Recipient added successfully.")
 }
 
+// AddNoteAction adds a note to an alert at OpsGenie.
 func AddNoteAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -381,7 +387,7 @@ func AddNoteAction(c *gcli.Context) {
 	req := alerts.AddNoteAlertRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -404,6 +410,7 @@ func AddNoteAction(c *gcli.Context) {
 	printVerboseMessage("Note added successfully.")
 }
 
+// ExecuteActionAction executes a custom action on an alert at OpsGenie.
 func ExecuteActionAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -413,7 +420,7 @@ func ExecuteActionAction(c *gcli.Context) {
 	req := alerts.ExecuteActionAlertRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -441,6 +448,7 @@ func ExecuteActionAction(c *gcli.Context) {
 	fmt.Printf("result=%s\n", resp.Result)
 }
 
+// CloseAlertAction closes an alert at OpsGenie.
 func CloseAlertAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -449,7 +457,7 @@ func CloseAlertAction(c *gcli.Context) {
 
 	req := alerts.CloseAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -475,6 +483,7 @@ func CloseAlertAction(c *gcli.Context) {
 	printVerboseMessage("Alert closed successfully.")
 }
 
+// DeleteAlertAction deletes an alert at OpsGenie.
 func DeleteAlertAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -483,7 +492,7 @@ func DeleteAlertAction(c *gcli.Context) {
 
 	req := alerts.DeleteAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.Id = val
+		req.ID = val
 	}
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
