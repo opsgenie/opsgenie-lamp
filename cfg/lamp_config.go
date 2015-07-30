@@ -19,18 +19,19 @@ import (
 )
 
 const (
-	confPath = "LAMP_CONF_PATH"
-	logDir = "LAMP_LOGS_DIR"
-	sep       string = string(filepath.Separator)
+	confPath        = "LAMP_CONF_PATH"
+	logDir          = "LAMP_LOGS_DIR"
+	sep      string = string(filepath.Separator)
 )
 
 var lampConfig *config.Config
+
 // Verbose is an exported variable to determine command is executing verbose mode or not.
 var Verbose = false
 
 func printVerboseMessage(message string) {
 	if Verbose {
-		fmt.Printf(message + "\n")
+		fmt.Printf("%s\n", message)
 	}
 }
 

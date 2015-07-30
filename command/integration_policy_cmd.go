@@ -20,16 +20,16 @@ func EnableAction(c *gcli.Context) {
 		}
 
 		req := policy.EnablePolicyRequest{}
-			if val, success := getVal("id", c); success {
-				req.ID = val
+		if val, success := getVal("id", c); success {
+			req.ID = val
 		}
-			if val, success := getVal("name", c); success {
+		if val, success := getVal("name", c); success {
 			req.Name = val
 		}
 		printVerboseMessage("Enable policy request prepared from flags, sending request to OpsGenie..")
 		_, err = cli.Enable(req)
 		if err != nil {
-			fmt.Printf(err.Error() + "\n")
+			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
 		}
 		fmt.Printf("Policy enabled successfuly\n")
@@ -41,16 +41,16 @@ func EnableAction(c *gcli.Context) {
 		}
 
 		req := integration.EnableIntegrationRequest{}
-			if val, success := getVal("id", c); success {
-				req.ID = val
+		if val, success := getVal("id", c); success {
+			req.ID = val
 		}
-			if val, success := getVal("name", c); success {
+		if val, success := getVal("name", c); success {
 			req.Name = val
 		}
 		printVerboseMessage("Enable integration request prepared from flags, sending request to OpsGenie..")
 		_, err = cli.Enable(req)
 		if err != nil {
-			fmt.Printf(err.Error() + "\n")
+			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
 		}
 		fmt.Printf("Integration enabled successfuly\n")
@@ -81,7 +81,7 @@ func DisableAction(c *gcli.Context) {
 		printVerboseMessage("Disable policy request prepared from flags, sending request to OpsGenie..")
 		_, err = cli.Disable(req)
 		if err != nil {
-			fmt.Printf(err.Error() + "\n")
+			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
 		}
 		fmt.Printf("Policy disabled successfuly\n")
@@ -102,7 +102,7 @@ func DisableAction(c *gcli.Context) {
 		printVerboseMessage("Disable integration request prepared from flags, sending request to OpsGenie..")
 		_, err = cli.Disable(req)
 		if err != nil {
-			fmt.Printf(err.Error() + "\n")
+			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
 		}
 		fmt.Printf("Integration disabled successfuly\n")

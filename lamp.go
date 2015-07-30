@@ -367,6 +367,38 @@ func addNoteCommand() gcli.Command {
 	return cmd
 }
 
+func addTagsCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "alertId, id",
+			Usage: "Id of the alert that the new tags will be added. Either id or alias must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the alert that the new tags will be added. Either id or alias must be provided. Alias option can only be used open alerts",
+		},
+		gcli.StringFlag{
+			Name:  "tags",
+			Usage: "A comma separated list of labels attached to the alert.",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Additional alert note",
+		},
+		gcli.StringFlag{
+			Name:  "source",
+			Usage: "Source of the action",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "addTags",
+		Flags:  flags,
+		Usage:  "Adds tags to an alert.",
+		Action: command.AddTagsAction,
+	}
+	return cmd
+}
+
 func executeActionCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
@@ -526,6 +558,7 @@ func initCommands(app *gcli.App) {
 		assignOwnerCommand(),
 		addTeamCommand(),
 		addRecipientCommand(),
+		addTagsCommand(),
 		addNoteCommand(),
 		executeActionCommand(),
 		closeAlertCommand(),
