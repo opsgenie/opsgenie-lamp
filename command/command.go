@@ -23,6 +23,7 @@ import (
 
 	gcli "github.com/codegangsta/cli"
 	ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
+	log "github.com/opsgenie/opsgenie-go-sdk/logging"
 	"github.com/opsgenie/opsgenie-lamp/cfg"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -32,6 +33,9 @@ var verbose = false
 func printVerboseMessage(message string) {
 	if verbose {
 		fmt.Printf("%s\n", message)
+	}
+	if log.Logger() != nil {
+		log.Logger().Debug(fmt.Sprintf(message))
 	}
 }
 

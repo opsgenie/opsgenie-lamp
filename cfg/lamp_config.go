@@ -15,7 +15,7 @@ import (
 
 	"github.com/ccding/go-config-reader/config"
 	"github.com/cihub/seelog"
-	"github.com/opsgenie/opsgenie-go-sdk/logging"
+	log "github.com/opsgenie/opsgenie-go-sdk/logging"
 )
 
 const (
@@ -32,6 +32,9 @@ var Verbose = false
 func printVerboseMessage(message string) {
 	if Verbose {
 		fmt.Printf("%s\n", message)
+	}
+	if log.Logger() != nil {
+		log.Logger().Debug(fmt.Sprintf(message))
 	}
 }
 
@@ -85,7 +88,7 @@ func Get(key string) string {
 }
 
 func configureLog() {
-	level := lampConfig.Get("", "lamp.log.level")
+	level := Get("lamp.log.level")
 	if level == "" {
 		level = "warn"
 		printVerboseMessage("Could not get log level from configuration, will use default \"warn\".")
@@ -94,7 +97,7 @@ func configureLog() {
 	logDir := os.Getenv(logDir)
 
 	var outPath string
-	logFile := lampConfig.Get("", "lamp.log.file")
+	logFile := Get("lamp.log.file")
 	if logFile == "" {
 		logFile = "lamp.log"
 		printVerboseMessage("Could not get log filename from configuration. \"lamp.log\" will be used as log filename.")
@@ -112,7 +115,7 @@ func configureLog() {
 	if err != nil {
 		fmt.Printf("Error occured while configuring logger: %s\n", err.Error())
 	}
-	logging.UseLogger(logger)
+	log.UseLogger(logger)
 }
 
 func template(outPath string, level string) string {
