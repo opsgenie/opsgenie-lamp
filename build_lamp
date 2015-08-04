@@ -1,5 +1,5 @@
 cd $GOPATH/src/github.com/opsgenie/opsgenie-lamp
-go get ...
+go get .
 
 GOOS=linux GOARCH=386 go build
 GOOS=windows GOARCH=386 go build

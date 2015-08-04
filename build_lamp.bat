@@ -1,6 +1,6 @@
 @echo off
 cd %GOPATH%\src\github.com\opsgenie\opsgenie-lamp
-go get ...
+go get .
 
 setlocal
 set GOOS=windows
