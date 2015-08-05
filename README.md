@@ -1,7 +1,7 @@
 # Lamp: OpsGenie Command line interface
 
 ## Introduction
-[![](https://godoc.org/github.com/nathany/looper?status.svg)](http://godoc.org/github.com/opsgenie/opsgenie-lamp)
+[![](https://godoc.org/github.com/nathany/looper?status.svg)](http://godoc.org/github.com/opsgenie/opsgenie-lamp/command)
 
 Lamp is a command line utility to interact with [OpsGenie](http://www.opsgenie.com) service. It allows users to create and close alerts, attach files, etc. 
 Lamp is used to integrate any management tool that can execute a shell script with OpsGenie. Lamp interacts with the OpsGenie service through the 
