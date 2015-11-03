@@ -1,5 +1,10 @@
 cd $GOPATH/src/github.com/opsgenie/opsgenie-lamp
 go get .
 
-GOOS=linux GOARCH=386 go build
+if [ "`uname`" = "Darwin" ]
+then
+  GOOS=darwin GOARCH=386 go build
+else
+  GOOS=linux GOARCH=386 go build
+fi
 GOOS=windows GOARCH=386 go build
