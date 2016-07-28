@@ -78,7 +78,7 @@ func isEmpty(argName string, arg string, c *gcli.Context) bool {
 		} else {
 			prefix = "--"
 		}
-		if strings.Contains(arg, prefix+name) {
+		if strings.EqualFold(arg, prefix+name) {
 			fmt.Printf("Value of argument '%s' is empty\n", argName)
 			gcli.ShowCommandHelp(c, c.Command.Name)
 			os.Exit(1)
