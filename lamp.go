@@ -12,7 +12,7 @@ import (
 	"github.com/opsgenie/opsgenie-lamp/command"
 )
 
-const lampVersion string = "1.0.0"
+const lampVersion string = "2.2.2"
 
 var commonFlags = []gcli.Flag{
 	gcli.BoolFlag{
@@ -84,7 +84,10 @@ func createAlertCommand() gcli.Command {
 	cmd := gcli.Command{Name: "createAlert",
 		Flags:  flags,
 		Usage:  "Creates an alert at OpsGenie",
-		Action: command.CreateAlertAction,
+		Action: func(c *gcli.Context) error {
+			command.CreateAlertAction(c)
+			return nil
+		},
 	}
 	return cmd
 }
@@ -113,7 +116,10 @@ func getAlertCommand() gcli.Command {
 	cmd := gcli.Command{Name: "getAlert",
 		Flags:  flags,
 		Usage:  "Gets an alert content from OpsGenie",
-		Action: command.GetAlertAction,
+		Action: func(c *gcli.Context) error {
+			command.GetAlertAction(c)
+			return nil
+		},
 	}
 	return cmd
 }
@@ -149,7 +155,10 @@ func attachFileCommand() gcli.Command {
 	cmd := gcli.Command{Name: "attachFile",
 		Flags:  flags,
 		Usage:  "Attaches files to an alert",
-		Action: command.AttachFileAction,
+		Action: func(c *gcli.Context) error {
+			command.AttachFileAction(c)
+			return nil
+		},
 	}
 	return cmd
 }
@@ -177,7 +186,10 @@ func acknowledgeCommand() gcli.Command {
 	cmd := gcli.Command{Name: "acknowledge",
 		Flags:  flags,
 		Usage:  "Acknowledges an alert at OpsGenie",
-		Action: command.AcknowledgeAction,
+		Action: func(c *gcli.Context) error {
+			command.AcknowledgeAction(c)
+			return nil
+		},
 	}
 	return cmd
 
@@ -210,8 +222,10 @@ func renotifyCommand() gcli.Command {
 	cmd := gcli.Command{Name: "renotify",
 		Flags:  flags,
 		Usage:  "Renotifies recipients at OpsGenie.",
-		Action: command.RenotifyAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.RenotifyAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -238,8 +252,10 @@ func takeOwnershipCommand() gcli.Command {
 	cmd := gcli.Command{Name: "takeOwnership",
 		Flags:  flags,
 		Usage:  "Takes the ownership of an alert at OpsGenie.",
-		Action: command.TakeOwnershipAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.TakeOwnershipAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -270,8 +286,10 @@ func assignOwnerCommand() gcli.Command {
 	cmd := gcli.Command{Name: "assign",
 		Flags:  flags,
 		Usage:  "Assigns the ownership of an alert to the specified user.",
-		Action: command.AssignOwnerAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.AssignOwnerAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -302,8 +320,10 @@ func addTeamCommand() gcli.Command {
 	cmd := gcli.Command{Name: "addTeam",
 		Flags:  flags,
 		Usage:  "Adds a new team to an alert.",
-		Action: command.AddTeamAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.AddTeamAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -334,8 +354,10 @@ func addRecipientCommand() gcli.Command {
 	cmd := gcli.Command{Name: "addRecipient",
 		Flags:  flags,
 		Usage:  "Adds a new recipient to an alert.",
-		Action: command.AddRecipientAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.AddRecipientAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -362,8 +384,10 @@ func addNoteCommand() gcli.Command {
 	cmd := gcli.Command{Name: "addNote",
 		Flags:  flags,
 		Usage:  "Adds a user comment for an alert.",
-		Action: command.AddNoteAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.AddNoteAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -394,8 +418,10 @@ func addTagsCommand() gcli.Command {
 	cmd := gcli.Command{Name: "addTags",
 		Flags:  flags,
 		Usage:  "Adds tags to an alert.",
-		Action: command.AddTagsAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.AddTagsAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -426,8 +452,10 @@ func executeActionCommand() gcli.Command {
 	cmd := gcli.Command{Name: "executeAction",
 		Flags:  flags,
 		Usage:  "Executes alert actions at OpsGenie",
-		Action: command.ExecuteActionAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.ExecuteActionAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -458,8 +486,10 @@ func closeAlertCommand() gcli.Command {
 	cmd := gcli.Command{Name: "closeAlert",
 		Flags:  flags,
 		Usage:  "Closes an alert at OpsGenie",
-		Action: command.CloseAlertAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.CloseAlertAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -478,8 +508,10 @@ func deleteAlertCommand() gcli.Command {
 	cmd := gcli.Command{Name: "deleteAlert",
 		Flags:  flags,
 		Usage:  "Deletes an alert at OpsGenie.",
-		Action: command.DeleteAlertAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.DeleteAlertAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -494,8 +526,10 @@ func heartbeatCommand() gcli.Command {
 	cmd := gcli.Command{Name: "heartbeat",
 		Flags:  flags,
 		Usage:  "Sends heartbeat to OpsGenie",
-		Action: command.HeartbeatAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.HeartbeatAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -518,8 +552,10 @@ func enableCommand() gcli.Command {
 	cmd := gcli.Command{Name: "enable",
 		Flags:  flags,
 		Usage:  "Enables OpsGenie Integration and Policy.",
-		Action: command.EnableAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.EnableAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
@@ -542,8 +578,10 @@ func disableCommand() gcli.Command {
 	cmd := gcli.Command{Name: "disable",
 		Flags:  flags,
 		Usage:  "Disables OpsGenie Integration and Policy.",
-		Action: command.DisableAction,
-	}
+		Action: func(c *gcli.Context) error {
+			command.DisableAction(c)
+			return nil
+		},	}
 	return cmd
 }
 
