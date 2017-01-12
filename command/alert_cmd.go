@@ -7,6 +7,7 @@ import (
 
 	gcli "github.com/codegangsta/cli"
 	"github.com/opsgenie/opsgenie-go-sdk/alerts"
+	"strconv"
 )
 
 // CreateAlertAction creates an alert at OpsGenie.
@@ -546,4 +547,527 @@ func DeleteAlertAction(c *gcli.Context) {
 	}
 
 	printVerboseMessage("Alert deleted successfully.")
+}
+
+// ListAlertsAction retrieves alert details from OpsGenie.
+func ListAlertsAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+	req := alerts.ListAlertsRequest{}
+	if val, success := getVal("createdAfter", c); success {
+		createdAfter, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.CreatedAfter = createdAfter
+	}
+	if val, success := getVal("createdBefore", c); success {
+		createdBefore, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.CreatedBefore = createdBefore
+	}
+	if val, success := getVal("updatedAfter", c); success {
+		updatedAfter, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.UpdatedAfter = updatedAfter
+	}
+	if val, success := getVal("updatedBefore", c); success {
+		updatedBefore, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.UpdatedBefore = updatedBefore
+	}
+	if val, success := getVal("limit", c); success {
+		limit, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.Limit = limit
+	}
+	if val, success := getVal("status", c); success {
+		req.Status = val
+	}
+	if val, success := getVal("sortBy", c); success {
+		req.SortBy = val
+	}
+	if val, success := getVal("order", c); success {
+		req.Order = val
+	}
+	if val, success := getVal("teams", c); success {
+		req.Teams = strings.Split(val, ",")
+	}
+	if val, success := getVal("tags", c); success {
+		req.Tags = strings.Split(val, ",")
+	}
+	if val, success := getVal("tagsOperator", c); success {
+		req.TagsOperator = val
+	}
+
+
+	printVerboseMessage("List alerts request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.List(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	outputFormat := strings.ToLower(c.String("output-format"))
+	printVerboseMessage("Got Alerts successfully, and will print as " + outputFormat)
+	switch outputFormat {
+	case "yaml":
+		output, err := resultToYAML(resp)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	default:
+		isPretty := c.IsSet("pretty")
+		output, err := resultToJSON(resp, isPretty)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	}
+}
+
+// CountAlertsAction retrieves number of alerts from OpsGenie.
+func CountAlertsAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+	req := alerts.CountAlertRequest{}
+	if val, success := getVal("createdAfter", c); success {
+		createdAfter, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.CreatedAfter = createdAfter
+	}
+	if val, success := getVal("createdBefore", c); success {
+		createdBefore, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.CreatedBefore = createdBefore
+	}
+	if val, success := getVal("updatedAfter", c); success {
+		updatedAfter, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.UpdatedAfter = updatedAfter
+	}
+	if val, success := getVal("updatedBefore", c); success {
+		updatedBefore, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.UpdatedBefore = updatedBefore
+	}
+	if val, success := getVal("limit", c); success {
+		limit, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.Limit = limit
+	}
+	if val, success := getVal("status", c); success {
+		req.Status = val
+	}
+	if val, success := getVal("tags", c); success {
+		req.Tags = strings.Split(val, ",")
+	}
+	if val, success := getVal("tagsOperator", c); success {
+		req.TagsOperator = val
+	}
+
+
+	printVerboseMessage("Count alerts request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.Count(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+	fmt.Printf("%d\n", resp.Count)
+}
+
+// ListAlertNotesAction retrieves specified alert notes from OpsGenie.
+func ListAlertNotesAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+	req := alerts.ListAlertNotesRequest{}
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+	if val, success := getVal("limit", c); success {
+		limit, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.Limit = limit
+	}
+	if val, success := getVal("order", c); success {
+		req.Order = val
+	}
+	if val, success := getVal("lastKey", c); success {
+		req.LastKey = val
+	}
+	printVerboseMessage("List alert notes request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.ListNotes(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	outputFormat := strings.ToLower(c.String("output-format"))
+	printVerboseMessage("Alert notes listed successfully, and will print as " + outputFormat)
+	switch outputFormat {
+	case "yaml":
+		output, err := resultToYAML(resp)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	default:
+		isPretty := c.IsSet("pretty")
+		output, err := resultToJSON(resp, isPretty)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	}
+}
+
+// ListAlertLogsAction retrieves specified alert logs from OpsGenie.
+func ListAlertLogsAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+	req := alerts.ListAlertLogsRequest{}
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+	if val, success := getVal("limit", c); success {
+		limit, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			os.Exit(2)
+		}
+		req.Limit = limit
+	}
+	if val, success := getVal("order", c); success {
+		req.Order = val
+	}
+	if val, success := getVal("lastKey", c); success {
+		req.LastKey = val
+	}
+	printVerboseMessage("List alert notes request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.ListLogs(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	outputFormat := strings.ToLower(c.String("output-format"))
+	printVerboseMessage("Alert notes listed successfully, and will print as " + outputFormat)
+	switch outputFormat {
+	case "yaml":
+		output, err := resultToYAML(resp)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	default:
+		isPretty := c.IsSet("pretty")
+		output, err := resultToJSON(resp, isPretty)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	}
+}
+
+// ListAlertRecipientsAction retrieves specified alert recipients from OpsGenie.
+func ListAlertRecipientsAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+	req := alerts.ListAlertRecipientsRequest{}
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+
+	printVerboseMessage("List alert recipients request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.ListRecipients(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	outputFormat := strings.ToLower(c.String("output-format"))
+	printVerboseMessage("Alert recipients listed successfully, and will print as " + outputFormat)
+	switch outputFormat {
+	case "yaml":
+		output, err := resultToYAML(resp)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	default:
+		isPretty := c.IsSet("pretty")
+		output, err := resultToJSON(resp, isPretty)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	}
+}
+
+// UnAcknowledgeAction unacknowledges an alert at OpsGenie.
+func UnAcknowledgeAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alerts.UnAcknowledgeAlertRequest{}
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
+		req.Source = val
+	}
+	if val, success := getVal("note", c); success {
+		req.Note = val
+	}
+
+	printVerboseMessage("Unacknowledge alert request prepared from flags, sending request to OpsGenie..")
+
+	_, err = cli.UnAcknowledge(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	printVerboseMessage("Alert unacknowledged successfully.")
+}
+
+// SnoozeAction snoozes an alert at OpsGenie.
+func SnoozeAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alerts.SnoozeAlertRequest{}
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+	if val, success := getVal("endDate", c); success {
+		req.EndDate = val
+	}
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
+		req.Source = val
+	}
+	if val, success := getVal("note", c); success {
+		req.Note = val
+	}
+	if val, success := getVal("timezone", c); success {
+		req.TimeZone = val
+	}
+
+	printVerboseMessage("Snooze request prepared from flags, sending request to OpsGenie..")
+
+	_, err = cli.Snooze(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+	printVerboseMessage("Snoozed successfully.")
+}
+
+
+// RemoveTagsAction removes tags from an alert at OpsGenie.
+func RemoveTagsAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alerts.RemoveTagsAlertRequest{}
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+	if val, success := getVal("tags", c); success {
+		req.Tags = strings.Split(val, ",")
+	}
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
+		req.Source = val
+	}
+	if val, success := getVal("note", c); success {
+		req.Note = val
+	}
+
+	printVerboseMessage("Remove tags request prepared from flags, sending request to OpsGenie..")
+
+	_, err = cli.RemoveTags(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+	printVerboseMessage("Tags removed successfully.")
+}
+
+// AddDetailsAction adds details to an alert at OpsGenie.
+func AddDetailsAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alerts.AddDetailsAlertRequest{}
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
+		req.Source = val
+	}
+	if val, success := getVal("note", c); success {
+		req.Note = val
+	}
+	if c.IsSet("D") {
+		req.Details = extractDetailsFromCommand(c)
+	}
+	printVerboseMessage("Add details request prepared from flags, sending request to OpsGenie..")
+
+	_, err = cli.AddDetails(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+	printVerboseMessage("Details added successfully.")
+}
+
+// RemoveDetailsAction removes details from an alert at OpsGenie.
+func RemoveDetailsAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alerts.RemoveDetailsAlertRequest{}
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+	if val, success := getVal("keys", c); success {
+		req.Keys = strings.Split(val, ",")
+	}
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
+		req.Source = val
+	}
+	if val, success := getVal("note", c); success {
+		req.Note = val
+	}
+
+	printVerboseMessage("Remove details request prepared from flags, sending request to OpsGenie..")
+
+	_, err = cli.RemoveDetails(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+	printVerboseMessage("Details removed successfully.")
+}
+
+
+// EscalateToNextAction processes the next available rule in the specified escalation.
+func EscalateToNextAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alerts.EscalateToNextAlertRequest{}
+
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+	if val, success := getVal("escalationId", c); success {
+		req.EscalationID = val
+	}
+	if val, success := getVal("escalationName", c); success {
+		req.EscalationName = val
+	}
+	req.User = grabUsername(c)
+	if val, success := getVal("source", c); success {
+		req.Source = val
+	}
+	if val, success := getVal("note", c); success {
+		req.Note = val
+	}
+
+	printVerboseMessage("Escalate to next request prepared from flags, sending request to OpsGenie..")
+
+	_, err = cli.EscalateToNext(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+	printVerboseMessage("Escalated to next successfully.")
 }
