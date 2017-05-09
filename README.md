@@ -29,7 +29,7 @@ To download all packages in the repo with their dependencies, simply run
 
 The command will automatically download and install necessary package files and dependencies under the src directory of the GOPATH.
 
-Then cd to Lamp's source directory and install lamp to GOPATH/bin via command
+Then cd to GOPATH/src/github.com/opsgenie/opsgenie-lamp and run:
 
 `go install`
 
@@ -47,7 +47,7 @@ After run `go install` you can start executing commands using OpsGenie Lamp.
 
 You can create an alert OpsGenie by executing the command below:
 
-`lamp createAlert --message "appserver1 down" --recipients john.smith@acme.com --apiKey your_api_key`
+`lamp createAlert --message "appserver1 down" --recipientsÂ john.smith@acme.com --apiKey your_api_key`
 
 For more information and command samples about OpsGenie Lamp, please refer to [OpsGenie Lamp](http://www.opsgenie.com/docs/lamp/lamp-command-line-interface-for-opsgenie)
 
