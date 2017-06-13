@@ -40,10 +40,6 @@ func createAlertCommand() gcli.Command {
 			Usage: "Alert text limited to 130 characters",
 		},
 		gcli.StringFlag{
-			Name:  "recipients",
-			Usage: "The user names of individual users or names of groups",
-		},
-		gcli.StringFlag{
 			Name:  "teams",
 			Usage: "A comma seperated list of teams",
 		},
@@ -75,6 +71,10 @@ func createAlertCommand() gcli.Command {
 			Name:  "note",
 			Usage: "Additional alert note",
 		},
+		gcli.StringFlag{
+			Name:  "priority",
+			Usage: "The priority of alert. Values: P1, P2, P3, P4, P5 default is P3",
+		},
 		gcli.StringSliceFlag{
 			Name:  "D",
 			Usage: "Additional alert properties.\n\tSyntax: -D key=value",
@@ -82,8 +82,8 @@ func createAlertCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "createAlert",
-		Flags:  flags,
-		Usage:  "Creates an alert at OpsGenie",
+		Flags:            flags,
+		Usage:            "Creates an alert at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.CreateAlertAction(c)
 			return nil
@@ -114,8 +114,8 @@ func getAlertCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "getAlert",
-		Flags:  flags,
-		Usage:  "Gets an alert content from OpsGenie",
+		Flags:            flags,
+		Usage:            "Gets an alert content from OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.GetAlertAction(c)
 			return nil
@@ -127,28 +127,16 @@ func getAlertCommand() gcli.Command {
 func listAlertsCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
-			Name:  "createdAfter",
-			Usage: "Unix timestamp value which is converted to nano second. Request will return all alerts which are created after specified time",
-		},
-		gcli.StringFlag{
-			Name:  "createdBefore",
-			Usage: "Unix timestamp value which is converted to nano second. Request will return all alerts which are created before specified time",
-		},
-		gcli.StringFlag{
-			Name:  "updatedAfter",
-			Usage: "Unix timestamp value which is converted to nano second. Request will return all alerts which are updated after specified time",
-		},
-		gcli.StringFlag{
-			Name:  "updatedBefore",
-			Usage: "Unix timestamp value which is converted to nano second. Request will return all alerts which are updated before specified time",
+			Name:  "query",
+			Usage: "Search query to apply while filtering the alerts",
 		},
 		gcli.StringFlag{
 			Name:  "limit",
 			Usage: "Page size. Default is 20. Max value for this parameter is 100",
 		},
 		gcli.StringFlag{
-			Name:  "status",
-			Usage: "Used to query alerts with specified status. May take one of open, acked, unacked, seen, notseen, closed",
+			Name:  "offset",
+			Usage: "Start index of the result set (to apply pagination). Minimum value (and also default value) is 0",
 		},
 		gcli.StringFlag{
 			Name:  "sortBy",
@@ -159,16 +147,12 @@ func listAlertsCommand() gcli.Command {
 			Usage: "asc/desc, default: desc",
 		},
 		gcli.StringFlag{
-			Name:  "teams",
-			Usage: "A comma seperated list of teams",
+			Name:  "searchId",
+			Usage: "id of the saved search",
 		},
 		gcli.StringFlag{
-			Name:  "tags",
-			Usage: "A comma separated list of labels attached to the alert",
-		},
-		gcli.StringFlag{
-			Name:  "tagsOperator",
-			Usage: "tags are combined with tagsOperator when filtered. Accepted values: and/or, default: and",
+			Name:  "searchName",
+			Usage: "name of the saved search",
 		},
 		gcli.StringFlag{
 			Name:  "output-format",
@@ -182,8 +166,8 @@ func listAlertsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlerts",
-		Flags:  flags,
-		Usage:  "Lists alerts contents from OpsGenie",
+		Flags:            flags,
+		Usage:            "Lists alerts contents from OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertsAction(c)
 			return nil
@@ -195,42 +179,18 @@ func listAlertsCommand() gcli.Command {
 func countAlertsCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
-			Name:  "createdAfter",
-			Usage: "Unix timestamp value which is converted to nano second. Request will return all alerts which are created after specified time",
-		},
-		gcli.StringFlag{
-			Name:  "createdBefore",
-			Usage: "Unix timestamp value which is converted to nano second. Request will return all alerts which are created before specified time",
-		},
-		gcli.StringFlag{
-			Name:  "updatedAfter",
-			Usage: "Unix timestamp value which is converted to nano second. Request will return all alerts which are updated after specified time",
-		},
-		gcli.StringFlag{
-			Name:  "updatedBefore",
-			Usage: "Unix timestamp value which is converted to nano second. Request will return all alerts which are updated before specified time",
+			Name:  "query",
+			Usage: "Search query to apply while filtering the alerts. If it is given, createdAfter, createdBefore, updatedAfter, updatedBefore, status and tags will be ignored",
 		},
 		gcli.StringFlag{
 			Name:  "limit",
 			Usage: "Page size. Default is 20. Max value for this parameter is 100",
 		},
-		gcli.StringFlag{
-			Name:  "status",
-			Usage: "Used to query alerts with specified status. May take one of open, acked, unacked, seen, notseen, closed",
-		},
-		gcli.StringFlag{
-			Name:  "tags",
-			Usage: "A comma separated list of labels attached to the alert",
-		},
-		gcli.StringFlag{
-			Name:  "tagsOperator",
-			Usage: "tags are combined with tagsOperator when filtered. Accepted values: and/or, default: and",
-		},
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "countAlerts",
-		Flags:  flags,
-		Usage:  "Counts alerts at OpsGenie",
+		Flags:            flags,
+		Usage:            "Counts alerts at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.CountAlertsAction(c)
 			return nil
@@ -258,8 +218,12 @@ func listAlertNotesCommand() gcli.Command {
 			Usage: "asc/desc, default : desc",
 		},
 		gcli.StringFlag{
-			Name:  "lastKey",
-			Usage: "Key which will be used in pagination.",
+			Name:  "offset",
+			Usage: "Starting value of the offset property.",
+		},
+		gcli.StringFlag{
+			Name:  "direction",
+			Usage: "Page direction to apply for the given offset. Possible values are next and prev. Default value is `next`",
 		},
 		gcli.StringFlag{
 			Name:  "output-format",
@@ -273,8 +237,8 @@ func listAlertNotesCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertNotes",
-		Flags:  flags,
-		Usage:  "Lists alert notes from OpsGenie",
+		Flags:            flags,
+		Usage:            "Lists alert notes from OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertNotesAction(c)
 			return nil
@@ -302,8 +266,12 @@ func listAlertLogsCommand() gcli.Command {
 			Usage: "asc/desc, default : desc",
 		},
 		gcli.StringFlag{
-			Name:  "lastKey",
-			Usage: "Key which will be used in pagination.",
+			Name:  "offset",
+			Usage: "Starting value of the offset property.",
+		},
+		gcli.StringFlag{
+			Name:  "direction",
+			Usage: "Page direction to apply for the given offset. Possible values are next and prev. Default value is next.",
 		},
 		gcli.StringFlag{
 			Name:  "output-format",
@@ -317,8 +285,8 @@ func listAlertLogsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertLogs",
-		Flags:  flags,
-		Usage:  "Lists alert logs from OpsGenie",
+		Flags:            flags,
+		Usage:            "Lists alert logs from OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertLogsAction(c)
 			return nil
@@ -349,8 +317,8 @@ func listAlertRecipientsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertRecipients",
-		Flags:  flags,
-		Usage:  "Lists alert recipients from OpsGenie",
+		Flags:            flags,
+		Usage:            "Lists alert recipients from OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertRecipientsAction(c)
 			return nil
@@ -380,8 +348,8 @@ func unAcknowledgeCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "unacknowledge",
-		Flags:  flags,
-		Usage:  "Unacknowledges an alert at OpsGenie",
+		Flags:            flags,
+		Usage:            "Unacknowledges an alert at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.UnAcknowledgeAction(c)
 			return nil
@@ -403,7 +371,7 @@ func snoozeCommand() gcli.Command {
 		},
 		gcli.StringFlag{
 			Name:  "endDate",
-			Usage: "The date and time snooze will end",
+			Usage: "The date in ISO8601 format snooze will end",
 		},
 		gcli.StringFlag{
 			Name:  "note",
@@ -413,15 +381,11 @@ func snoozeCommand() gcli.Command {
 			Name:  "source",
 			Usage: "Source of the action",
 		},
-		gcli.StringFlag{
-			Name:  "timezone",
-			Usage: "Timezone of endDate parameter",
-		},
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "snooze",
-		Flags:  flags,
-		Usage:  "Snoozes an alert at OpsGenie",
+		Flags:            flags,
+		Usage:            "Snoozes an alert at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.SnoozeAction(c)
 			return nil
@@ -456,12 +420,12 @@ func removeTagsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "removeTags",
-		Flags:  flags,
-		Usage:  "Removes tags from an alert at OpsGenie",
+		Flags:            flags,
+		Usage:            "Removes tags from an alert at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.RemoveTagsAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -490,12 +454,12 @@ func addDetailsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addDetails",
-		Flags:  flags,
-		Usage:  "Adds details to an alert at OpsGenie",
+		Flags:            flags,
+		Usage:            "Adds details to an alert at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.AddDetailsAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -524,12 +488,12 @@ func removeDetailsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "removeDetails",
-		Flags:  flags,
-		Usage:  "Removes details from an alert at OpsGenie",
+		Flags:            flags,
+		Usage:            "Removes details from an alert at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.RemoveDetailsAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -562,12 +526,12 @@ func escalateToNextActionCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "escalateToNext",
-		Flags:  flags,
-		Usage:  "Esclates to the next rule in the specified escalation at OpsGenie",
+		Flags:            flags,
+		Usage:            "Esclates to the next rule in the specified escalation at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.EscalateToNextAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -600,8 +564,8 @@ func attachFileCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "attachFile",
-		Flags:  flags,
-		Usage:  "Attaches files to an alert",
+		Flags:            flags,
+		Usage:            "Attaches files to an alert",
 		Action: func(c *gcli.Context) error {
 			command.AttachFileAction(c)
 			return nil
@@ -631,8 +595,8 @@ func acknowledgeCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "acknowledge",
-		Flags:  flags,
-		Usage:  "Acknowledges an alert at OpsGenie",
+		Flags:            flags,
+		Usage:            "Acknowledges an alert at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.AcknowledgeAction(c)
 			return nil
@@ -667,12 +631,12 @@ func renotifyCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "renotify",
-		Flags:  flags,
-		Usage:  "Renotifies recipients at OpsGenie.",
+		Flags:            flags,
+		Usage:            "Renotifies recipients at OpsGenie.",
 		Action: func(c *gcli.Context) error {
 			command.RenotifyAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -697,12 +661,12 @@ func takeOwnershipCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "takeOwnership",
-		Flags:  flags,
-		Usage:  "Takes the ownership of an alert at OpsGenie.",
+		Flags:            flags,
+		Usage:            "Takes the ownership of an alert at OpsGenie.",
 		Action: func(c *gcli.Context) error {
 			command.TakeOwnershipAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -731,12 +695,12 @@ func assignOwnerCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "assign",
-		Flags:  flags,
-		Usage:  "Assigns the ownership of an alert to the specified user.",
+		Flags:            flags,
+		Usage:            "Assigns the ownership of an alert to the specified user.",
 		Action: func(c *gcli.Context) error {
 			command.AssignOwnerAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -765,12 +729,12 @@ func addTeamCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addTeam",
-		Flags:  flags,
-		Usage:  "Adds a new team to an alert.",
+		Flags:            flags,
+		Usage:            "Adds a new team to an alert.",
 		Action: func(c *gcli.Context) error {
 			command.AddTeamAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -799,12 +763,12 @@ func addRecipientCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addRecipient",
-		Flags:  flags,
-		Usage:  "Adds a new recipient to an alert.",
+		Flags:            flags,
+		Usage:            "Adds a new recipient to an alert.",
 		Action: func(c *gcli.Context) error {
 			command.AddRecipientAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -829,12 +793,12 @@ func addNoteCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addNote",
-		Flags:  flags,
-		Usage:  "Adds a user comment for an alert.",
+		Flags:            flags,
+		Usage:            "Adds a user comment for an alert.",
 		Action: func(c *gcli.Context) error {
 			command.AddNoteAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -863,12 +827,12 @@ func addTagsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addTags",
-		Flags:  flags,
-		Usage:  "Adds tags to an alert.",
+		Flags:            flags,
+		Usage:            "Adds tags to an alert.",
 		Action: func(c *gcli.Context) error {
 			command.AddTagsAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -897,12 +861,12 @@ func executeActionCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "executeAction",
-		Flags:  flags,
-		Usage:  "Executes alert actions at OpsGenie",
+		Flags:            flags,
+		Usage:            "Executes alert actions at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.ExecuteActionAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -917,10 +881,6 @@ func closeAlertCommand() gcli.Command {
 			Usage: "Alias of the alert that will be closed. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "notify",
-			Usage: "Comma separated list of user and groups which will be notified. Also special values \"all\", \"recipients\" and \"owner\" is accepted",
-		},
-		gcli.StringFlag{
 			Name:  "note",
 			Usage: "Note text",
 		},
@@ -931,12 +891,12 @@ func closeAlertCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "closeAlert",
-		Flags:  flags,
-		Usage:  "Closes an alert at OpsGenie",
+		Flags:            flags,
+		Usage:            "Closes an alert at OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.CloseAlertAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -953,12 +913,12 @@ func deleteAlertCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "deleteAlert",
-		Flags:  flags,
-		Usage:  "Deletes an alert at OpsGenie.",
+		Flags:            flags,
+		Usage:            "Deletes an alert at OpsGenie.",
 		Action: func(c *gcli.Context) error {
 			command.DeleteAlertAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -971,12 +931,12 @@ func heartbeatCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "heartbeat",
-		Flags:  flags,
-		Usage:  "Sends heartbeat to OpsGenie",
+		Flags:            flags,
+		Usage:            "Sends heartbeat to OpsGenie",
 		Action: func(c *gcli.Context) error {
 			command.HeartbeatAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -997,12 +957,12 @@ func enableCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "enable",
-		Flags:  flags,
-		Usage:  "Enables OpsGenie Integration and Policy.",
+		Flags:            flags,
+		Usage:            "Enables OpsGenie Integration and Policy.",
 		Action: func(c *gcli.Context) error {
 			command.EnableAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -1023,12 +983,12 @@ func disableCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "disable",
-		Flags:  flags,
-		Usage:  "Disables OpsGenie Integration and Policy.",
+		Flags:            flags,
+		Usage:            "Disables OpsGenie Integration and Policy.",
 		Action: func(c *gcli.Context) error {
 			command.DisableAction(c)
 			return nil
-		},	}
+		}, }
 	return cmd
 }
 
@@ -1071,8 +1031,9 @@ func main() {
 	app.Version = lampVersion
 	app.Usage = "Command line interface for OpsGenie"
 	app.Author = "OpsGenie"
-	app.Action = func(c *gcli.Context) {
+	app.Action = func(c *gcli.Context) error {
 		fmt.Printf("Run 'lamp help' for the options\n")
+		return nil
 	}
 	initCommands(app)
 	err := app.Run(os.Args)

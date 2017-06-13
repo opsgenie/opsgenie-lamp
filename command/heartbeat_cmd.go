@@ -1,12 +1,8 @@
 package command
 
 import (
-	// "fmt"
 	gcli "github.com/codegangsta/cli"
 	hb "github.com/opsgenie/opsgenie-go-sdk/heartbeat"
-	// ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
-	// "strings"
-	// "errors"
 	"fmt"
 	"os"
 )
@@ -18,18 +14,17 @@ func HeartbeatAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 
-	req := hb.SendHeartbeatRequest{}
+	req := hb.PingHeartbeatRequest{}
 	if val, success := getVal("name", c); success {
 		req.Name = val
 	}
 
 	printVerboseMessage("Heartbeat request prepared from flags, sending request to OpsGenie..")
 
-	response, err := cli.Send(req)
+	response, err := cli.Ping(req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Send heartbeat successfully")
-	fmt.Printf("heartbeat=%d\n", response.Heartbeat)
+	printVerboseMessage("Ping request has recived. RequestID: " + response.RequestID)
 }

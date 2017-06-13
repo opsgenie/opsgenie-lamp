@@ -32,11 +32,15 @@ var verbose = false
 
 func printVerboseMessage(message string) {
 	if verbose {
-		fmt.Printf("%s\n", message)
+		fmt.Println(message)
 	}
 	if log.Logger() != nil {
-		log.Logger().Debug(fmt.Sprintf(message))
+		log.Logger().Debug(message)
 	}
+}
+
+func printWarningMessage(message string) {
+	fmt.Println(message)
 }
 
 /*
@@ -158,8 +162,22 @@ func initialize(c *gcli.Context) *ogcli.OpsGenieClient {
 	return cli
 }
 
-// NewAlertClient instantiates a new OpsGenieAlertClient.
-func NewAlertClient(c *gcli.Context) (*ogcli.OpsGenieAlertClient, error) {
+// NewAlertClient instantiates a new OpsGenieAlertV2Client.
+func NewAlertClient(c *gcli.Context) (*ogcli.OpsGenieAlertV2Client, error) {
+	cli := initialize(c)
+	alertCli, cliErr := cli.AlertV2()
+
+	if cliErr != nil {
+		message := "Can not create the alert client. " + cliErr.Error()
+		fmt.Printf("%s\n", message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Alert Client created..")
+	return alertCli, nil
+}
+
+// NewAlertClient instantiates a new OpsGenieAlertV2Client.
+func OldAlertClient(c *gcli.Context) (*ogcli.OpsGenieAlertClient, error) {
 	cli := initialize(c)
 	alertCli, cliErr := cli.Alert()
 
