@@ -539,11 +539,15 @@ func attachFileCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
-			Usage: "Id of the alert that the file will be attached. Either id or alias must be provided",
+			Usage: "Id of the alert that the file will be attached. Either id, alias or tinyId must be provided",
 		},
 		gcli.StringFlag{
 			Name:  "alias",
-			Usage: "Alias of the alert that the file will be attached. Either id or alias must be provided",
+			Usage: "Alias of the alert that the file will be attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "tinyId",
+			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
 		},
 		gcli.StringFlag{
 			Name:  "attachment",
@@ -553,14 +557,6 @@ func attachFileCommand() gcli.Command {
 			Name:  "indexFile",
 			Usage: "",
 		},
-		gcli.StringFlag{
-			Name:  "note",
-			Usage: "Additional alert note",
-		},
-		gcli.StringFlag{
-			Name:  "source",
-			Usage: "Source of the action",
-		},
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "attachFile",
@@ -568,6 +564,140 @@ func attachFileCommand() gcli.Command {
 		Usage:            "Attaches files to an alert",
 		Action: func(c *gcli.Context) error {
 			command.AttachFileAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getAttachmentCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "alertId, id",
+			Usage: "Id of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "tinyId",
+			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "attachmentId",
+			Usage: "Id of the alert attachment",
+		},
+		gcli.StringFlag{
+			Name:  "output-format",
+			Value: "json",
+			Usage: "Prints the output in json or yaml formats",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getAttachment",
+		Flags:            flags,
+		Usage:            "Gets the attachment download link for specified alert attachment",
+		Action: func(c *gcli.Context) error {
+			command.GetAttachmentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func downloadAttachmentCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "alertId, id",
+			Usage: "Id of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "tinyId",
+			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "attachmentId",
+			Usage: "Id of the alert attachment",
+		},
+		gcli.StringFlag{
+			Name:  "destinationPath",
+			Usage: "Destination path to download file to",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "downloadAttachment",
+		Flags:            flags,
+		Usage:            "Downloads the attachment for specified alert attachment",
+		Action: func(c *gcli.Context) error {
+			command.DownloadAttachmentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listAttachmentsCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "alertId, id",
+			Usage: "Id of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "tinyId",
+			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "output-format",
+			Value: "json",
+			Usage: "Prints the output in json or yaml formats",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listAttachments",
+		Flags:            flags,
+		Usage:            "List the attachment meta informations for specified alert",
+		Action: func(c *gcli.Context) error {
+			command.ListAlertAttachmentsAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteAttachmentCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "alertId, id",
+			Usage: "Id of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "tinyId",
+			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
+		},
+		gcli.StringFlag{
+			Name:  "attachmentId",
+			Usage: "Id of the alert attachment",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteAttachment",
+		Flags:            flags,
+		Usage:            "Delete the attachment with given id for specified alert",
+		Action: func(c *gcli.Context) error {
+			command.DeleteAlertAttachmentAction(c)
 			return nil
 		},
 	}
@@ -997,6 +1127,10 @@ func initCommands(app *gcli.App) {
 		createAlertCommand(),
 		getAlertCommand(),
 		attachFileCommand(),
+		getAttachmentCommand(),
+		downloadAttachmentCommand(),
+		listAttachmentsCommand(),
+		deleteAttachmentCommand(),
 		acknowledgeCommand(),
 		renotifyCommand(),
 		takeOwnershipCommand(),
