@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"github.com/opsgenie/opsgenie-go-sdk/alertsv2"
 	"time"
+	"io"
+	"net/http"
 )
 
 // CreateAlertAction creates an alert at OpsGenie.
@@ -147,26 +149,29 @@ func GetAlertAction(c *gcli.Context) {
 
 // AttachFileAction attaches a file to an alert at OpsGenie.
 func AttachFileAction(c *gcli.Context) {
-	cli, err := OldAlertClient(c)
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alerts.AttachFileAlertRequest{}
+	req := alertsv2.AddAlertAttachmentRequest{
+		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
+	}
+
 	if val, success := getVal("id", c); success {
 		req.ID = val
 	}
+
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
 	}
+
+	if val, success := getVal("tinyId", c); success {
+		req.TinyID = val
+	}
+
 	if val, success := getVal("attachment", c); success {
-		f, err := os.Open(val)
-		defer f.Close()
-		if err != nil {
-			fmt.Printf("%s\n", err.Error())
-			os.Exit(1)
-		}
-		req.Attachment = f
+		req.AttachmentFilePath = val
 	}
 
 	if val, success := getVal("indexFile", c); success {
@@ -174,22 +179,243 @@ func AttachFileAction(c *gcli.Context) {
 	}
 
 	req.User = grabUsername(c)
-	if val, success := getVal("source", c); success {
-		req.Source = val
-	}
-	if val, success := getVal("note", c); success {
-		req.Note = val
-	}
 
 	printVerboseMessage("Attach request prepared from flags, sending request to OpsGenie..")
 
-	_, err = cli.AttachFile(req)
+	response, err := cli.AttachFile(req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
 	printVerboseMessage("File attached to alert successfully.")
+	fmt.Printf("Result : %s\n", response.Result)
+}
+
+// GetAttachmentAction retrieves a download link to specified alert attachment
+func GetAttachmentAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alertsv2.GetAlertAttachmentRequest{
+		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
+	}
+
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+
+	if val, success := getVal("tinyId", c); success {
+		req.TinyID = val
+	}
+
+	if val, success := getVal("attachmentId", c); success {
+		req.AttachmentId = val
+	}
+
+	printVerboseMessage("Get alert attachment request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.GetAttachmentFile(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	outputFormat := strings.ToLower(c.String("output-format"))
+	printVerboseMessage("Got Alert Attachment successfully, and will print as " + outputFormat)
+	switch outputFormat {
+	case "yaml":
+		output, err := resultToYAML(resp.Attachment)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	default:
+		output, err := CustomJsonMarshaller(resp.Attachment)
+
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+
+		fmt.Printf("%s\n", output)
+	}
+}
+
+// DownloadAttachmentAction downloads the attachment specified with attachmentId for given alert
+func DownloadAttachmentAction(c *gcli.Context) {
+	var destinationPath string
+	cli, err := NewAlertClient(c)
+
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alertsv2.GetAlertAttachmentRequest{
+		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
+	}
+
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+
+	if val, success := getVal("tinyId", c); success {
+		req.TinyID = val
+	}
+
+	if val, success := getVal("attachmentId", c); success {
+		req.AttachmentId = val
+	}
+
+	if val, success := getVal("destinationPath", c); success {
+		destinationPath = val
+	}
+
+	printVerboseMessage("Download alert attachment request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.GetAttachmentFile(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	fileName := resp.Attachment.Name
+	downloadLink := resp.Attachment.DownloadLink
+
+	var output *os.File
+
+	if destinationPath != "" {
+		output, err = os.Create(destinationPath + "/" + fileName)
+	} else {
+		output, err = os.Create(fileName)
+	}
+
+	if err != nil {
+		fmt.Println("Error while creating", fileName, "-", err)
+		return
+	}
+	defer output.Close()
+
+	response, err := http.Get(downloadLink)
+	if err != nil {
+		fmt.Println("Error while downloading", fileName, "-", err)
+		return
+	}
+	defer response.Body.Close()
+
+	_, err = io.Copy(output, response.Body)
+
+	if err != nil {
+		fmt.Println("Error while downloading", fileName, "-", err)
+		return
+	}
+}
+
+// ListAlertAttachmentsAction returns a list of attachment meta information for specified alert
+func ListAlertAttachmentsAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alertsv2.ListAlertAttachmentRequest{
+		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
+	}
+
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+
+	if val, success := getVal("tinyId", c); success {
+		req.TinyID = val
+	}
+
+	printVerboseMessage("List alert attachments request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.ListAlertAttachments(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	outputFormat := strings.ToLower(c.String("output-format"))
+	printVerboseMessage("List Alert Attachment successfully, and will print as " + outputFormat)
+	switch outputFormat {
+	case "yaml":
+		output, err := resultToYAML(resp.AlertAttachments)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", output)
+	default:
+		output, err := CustomJsonMarshaller(resp.AlertAttachments)
+
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+
+		fmt.Printf("%s\n", output)
+	}
+}
+
+// DeleteAlertAttachmentAction deletes the specified alert attachment from alert
+func DeleteAlertAttachmentAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	req := alertsv2.DeleteAlertAttachmentRequest{
+		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
+	}
+
+	if val, success := getVal("id", c); success {
+		req.ID = val
+	}
+
+	if val, success := getVal("alias", c); success {
+		req.Alias = val
+	}
+
+	if val, success := getVal("tinyId", c); success {
+		req.TinyID = val
+	}
+
+	if val, success := getVal("attachmentId", c); success {
+		req.AttachmentId = val
+	}
+
+
+	printVerboseMessage("Delete alert attachment request prepared from flags, sending request to OpsGenie..")
+
+	resp, err := cli.DeleteAttachment(req)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	printVerboseMessage("Alert attachment will be deleted. RequestID: " + resp.RequestID)
+	fmt.Println("RequestID: " + resp.RequestID)
+	fmt.Println("Result: " + resp.Result)
 }
 
 // AcknowledgeAction acknowledges an alert at OpsGenie.
