@@ -26,7 +26,6 @@ import (
 	log "github.com/opsgenie/opsgenie-go-sdk/logging"
 	"github.com/opsgenie/opsgenie-lamp/cfg"
 	yaml "gopkg.in/yaml.v2"
-	"bytes"
 )
 
 var verbose = false
@@ -267,18 +266,6 @@ func resultToJSON(data interface{}, pretty bool) (string, error) {
 	}
 	return string(b), nil
 }
-
-// this custom marshaller added to prevent default marshaller escape html.
-func CustomJsonMarshaller(data interface{}) (string, error) {
-	buf := new(bytes.Buffer)
-	enc := json.NewEncoder(buf)
-	enc.SetEscapeHTML(false)
-
-	enc.Encode(data)
-
-	return buf.String(), nil
-}
-
 
 func readConfigFile(c *gcli.Context) {
 	cfg.Verbose = verbose

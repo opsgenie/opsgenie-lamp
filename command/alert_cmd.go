@@ -228,26 +228,9 @@ func GetAttachmentAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 
-	outputFormat := strings.ToLower(c.String("output-format"))
-	printVerboseMessage("Got Alert Attachment successfully, and will print as " + outputFormat)
-	switch outputFormat {
-	case "yaml":
-		output, err := resultToYAML(resp.Attachment)
-		if err != nil {
-			fmt.Printf("%s\n", err.Error())
-			os.Exit(1)
-		}
-		fmt.Printf("%s\n", output)
-	default:
-		output, err := CustomJsonMarshaller(resp.Attachment)
-
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-
-		fmt.Printf("%s\n", output)
-	}
+	printVerboseMessage("Got Alert Attachment successfully, and will print download link.")
+	fmt.Println("Download Link: ");
+	fmt.Printf("%s\n", resp.Attachment.DownloadLink)
 }
 
 // DownloadAttachmentAction downloads the attachment specified with attachmentId for given alert
@@ -366,7 +349,8 @@ func ListAlertAttachmentsAction(c *gcli.Context) {
 		}
 		fmt.Printf("%s\n", output)
 	default:
-		output, err := CustomJsonMarshaller(resp.AlertAttachments)
+		isPretty := c.IsSet("pretty")
+		output, err := resultToJSON(resp.AlertAttachments, isPretty)
 
 		if err != nil {
 			fmt.Println(err.Error())
