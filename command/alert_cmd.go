@@ -862,7 +862,7 @@ func generateListAlertRequest(c *gcli.Context) (alertsv2.ListAlertRequest) {
 	if val, success := getVal("order", c); success {
 		req.Order = alertsv2.Order(val)
 	}
-	if val, success := getVal("serchId", c); success {
+	if val, success := getVal("searchID", c); success {
 		req.SearchIdentifier = val
 		req.SearchIdentifierType = "id"
 	}
