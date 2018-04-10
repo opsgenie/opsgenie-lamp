@@ -5,6 +5,6 @@ if [ "`uname`" = "Darwin" ]
 then
   GOOS=darwin GOARCH=386 go build
 else
-  GOOS=linux GOARCH=amd64 go build
+  GOOS=linux GOARCH=386 go build
 fi
 GOOS=windows GOARCH=386 go build
