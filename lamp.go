@@ -12,7 +12,7 @@ import (
 	"github.com/opsgenie/opsgenie-lamp/command"
 )
 
-const lampVersion string = "2.2.2"
+const lampVersion string = "2.5.0"
 
 var commonFlags = []gcli.Flag{
 	gcli.BoolFlag{
@@ -1122,6 +1122,29 @@ func disableCommand() gcli.Command {
 	return cmd
 }
 
+func exportUsersCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "query",
+			Usage: "Search query to apply while filtering the users",
+		},
+		gcli.StringFlag{
+			Name:  "destinationPath",
+			Usage: "Destination path to download file to",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "exportUsers",
+		Flags:            flags,
+		Usage:            "Exports user list from OpsGenie",
+		Action: func(c *gcli.Context) error {
+			command.ExportUsersAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command{
 		createAlertCommand(),
@@ -1156,6 +1179,7 @@ func initCommands(app *gcli.App) {
 		addDetailsCommand(),
 		removeDetailsCommand(),
 		escalateToNextActionCommand(),
+		exportUsersCommand(),
 	}
 }
 

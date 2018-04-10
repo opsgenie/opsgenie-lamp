@@ -232,6 +232,21 @@ func NewPolicyClient(c *gcli.Context) (*ogcli.OpsGeniePolicyClient, error) {
 	return polCli, nil
 }
 
+// NewUserClient instantiates a new OpsGenieUserV2Client.
+func NewUserClient(c *gcli.Context) (*ogcli.OpsGenieUserV2Client, error) {
+	cli := initialize(c)
+	userCli, cliErr := cli.UserV2()
+
+	if cliErr != nil {
+		message := "Can not create the user client. " + cliErr.Error()
+		fmt.Printf("%s\n", message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("User Client created..")
+
+	return userCli, nil
+}
+
 /*
 The 'getAlert' command returns a GetAlertResponse object.
 The 'ResultToYaml' function is called whenever "output-format" parameter is
