@@ -87,17 +87,16 @@ func writeCsv(c *gcli.Context, users []userv2.User) {
 		log.Fatal(err)
 	} else {
 		destinationPath := getDestinationPath(c)
-		printVerboseMessage("The output file will be created under " + destinationPath)
 
 		file := createFile(destinationPath + "/result.csv")
 		defer file.Close()
 
-		n, err := file.Write(csv)
+		_, err := file.Write(csv)
 
 		if err != nil {
 			log.Fatal(err)
 		} else {
-			fmt.Printf("wrote %d bytes\n", n)
+			printVerboseMessage("The output file named result.csv has just been created.")
 		}
 	}
 }
