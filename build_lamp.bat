@@ -13,4 +13,9 @@ set GOARCH=386
 echo building for %GOOS%/%GOARCH%
 go build
 
+set GOOS=darwin
+set GOARCH=386
+echo building for %GOOS%/%GOARCH%
+go build
+
 endlocal
