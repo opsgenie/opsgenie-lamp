@@ -12,7 +12,7 @@ import (
 	"github.com/opsgenie/opsgenie-lamp/command"
 )
 
-const lampVersion string = "2.5.0"
+const lampVersion string = "2.5.1"
 
 var commonFlags = []gcli.Flag{
 	gcli.BoolFlag{
@@ -1121,6 +1121,31 @@ func disableCommand() gcli.Command {
 		}, }
 	return cmd
 }
+func downloadLogsCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "start",
+			Usage: "Log files starting this date",
+		},
+		gcli.StringFlag{
+			Name:  "end",
+			Usage: "Log files before this date",
+		},
+		gcli.StringFlag{
+			Name:   "path",
+			Usage:  "Directory path, log files will be downloaded under this directory",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "downloadLogs",
+		Flags:  flags,
+		Usage:  "Download Logs.",
+		Action: func(c *gcli.Context) error {
+			command.DownloadLogs(c)
+			return nil
+		},	}
+	return cmd
+}
 
 func exportUsersCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
@@ -1180,6 +1205,7 @@ func initCommands(app *gcli.App) {
 		removeDetailsCommand(),
 		escalateToNextActionCommand(),
 		exportUsersCommand(),
+		downloadLogsCommand(),
 	}
 }
 
