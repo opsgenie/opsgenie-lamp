@@ -1,15 +1,37 @@
 package command
 
 import (
+	"errors"
 	"fmt"
-	"os"
-
 	gcli "github.com/codegangsta/cli"
-	"github.com/opsgenie/opsgenie-go-sdk/integration"
-	"github.com/opsgenie/opsgenie-go-sdk/policy"
+	"github.com/opsgenie/opsgenie-go-sdk-v2/integration"
+	"github.com/opsgenie/opsgenie-go-sdk-v2/policy"
+	"os"
 )
 
-// EnableAction enables an integration/policy according to the --type parameter at OpsGenie.
+func NewIntegrationClient(c *gcli.Context) (*integration.Client, error) {
+	integrationCli, cliErr := integration.NewClient(getConfigurations(c))
+	if cliErr != nil {
+		message := "Can not create the integration client. " + cliErr.Error()
+		fmt.Printf("%s\n", message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Integration Client created.")
+	return integrationCli, nil
+}
+
+func NewPolicyClient(c *gcli.Context) (*policy.Client, error) {
+	policyCli, cliErr := policy.NewClient(getConfigurations(c))
+	if cliErr != nil {
+		message := "Can not create the policy client. " + cliErr.Error()
+		fmt.Printf("%s\n", message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Policy Client created.")
+	return policyCli, nil
+}
+
+// EnableAction enables an integration/policy according to the --type parameter at Opsgenie.
 func EnableAction(c *gcli.Context) {
 	val, _ := getVal("type", c)
 	switch val {
@@ -21,13 +43,16 @@ func EnableAction(c *gcli.Context) {
 
 		req := policy.EnablePolicyRequest{}
 		if val, success := getVal("id", c); success {
-			req.ID = val
+			req.Id = val
 		}
-		if val, success := getVal("name", c); success {
-			req.Name = val
+		if val, success := getVal("teamId", c); success {
+			req.TeamId = val
 		}
-		printVerboseMessage("Enable policy request prepared from flags, sending request to OpsGenie..")
-		_, err = cli.Enable(req)
+		if val, success := getVal("policyType", c); success {
+			req.Type = policy.PolicyType(val)
+		}
+		printVerboseMessage("Enable policy request prepared from flags, sending request to Opsgenie..")
+		_, err = cli.EnablePolicy(nil, &req)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -42,13 +67,10 @@ func EnableAction(c *gcli.Context) {
 
 		req := integration.EnableIntegrationRequest{}
 		if val, success := getVal("id", c); success {
-			req.ID = val
+			req.Id = val
 		}
-		if val, success := getVal("name", c); success {
-			req.Name = val
-		}
-		printVerboseMessage("Enable integration request prepared from flags, sending request to OpsGenie..")
-		_, err = cli.Enable(req)
+		printVerboseMessage("Enable integration request prepared from flags, sending request to Opsgenie..")
+		_, err = cli.Enable(nil, &req)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -61,7 +83,7 @@ func EnableAction(c *gcli.Context) {
 	}
 }
 
-// DisableAction disables an integration/policy according to the --type parameter at OpsGenie.
+// DisableAction disables an integration/policy according to the --type parameter at Opsgenie.
 func DisableAction(c *gcli.Context) {
 	val, _ := getVal("type", c)
 	switch val {
@@ -73,13 +95,16 @@ func DisableAction(c *gcli.Context) {
 
 		req := policy.DisablePolicyRequest{}
 		if val, success := getVal("id", c); success {
-			req.ID = val
+			req.Id = val
 		}
-		if val, success := getVal("name", c); success {
-			req.Name = val
+		if val, success := getVal("teamId", c); success {
+			req.TeamId = val
 		}
-		printVerboseMessage("Disable policy request prepared from flags, sending request to OpsGenie..")
-		_, err = cli.Disable(req)
+		if val, success := getVal("policyType", c); success {
+			req.Type = policy.PolicyType(val)
+		}
+		printVerboseMessage("Disable policy request prepared from flags, sending request to Opsgenie..")
+		_, err = cli.DisablePolicy(nil, &req)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -94,13 +119,10 @@ func DisableAction(c *gcli.Context) {
 
 		req := integration.DisableIntegrationRequest{}
 		if val, success := getVal("id", c); success {
-			req.ID = val
+			req.Id = val
 		}
-		if val, success := getVal("name", c); success {
-			req.Name = val
-		}
-		printVerboseMessage("Disable integration request prepared from flags, sending request to OpsGenie..")
-		_, err = cli.Disable(req)
+		printVerboseMessage("Disable integration request prepared from flags, sending request to Opsgenie..")
+		_, err = cli.Disable(nil, &req)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)

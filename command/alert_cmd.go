@@ -1,44 +1,46 @@
 package command
 
 import (
+	"errors"
 	"fmt"
-	"os"
-	"strings"
-
 	gcli "github.com/codegangsta/cli"
-	"github.com/opsgenie/opsgenie-go-sdk/alerts"
-	"strconv"
-	"github.com/opsgenie/opsgenie-go-sdk/alertsv2"
-	"time"
+	"github.com/opsgenie/opsgenie-go-sdk-v2/alert"
 	"io"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
-// CreateAlertAction creates an alert at OpsGenie.
+func NewAlertClient(c *gcli.Context) (*alert.Client, error) {
+	alertCli, cliErr := alert.NewClient(getConfigurations(c))
+	if cliErr != nil {
+		message := "Can not create the alert client. " + cliErr.Error()
+		fmt.Printf("%s\n", message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Alert Client created.")
+	return alertCli, nil
+}
+
+// CreateAlertAction creates an alert at Opsgenie.
 func CreateAlertAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
-	req := alertsv2.CreateAlertRequest{}
+	req := alert.CreateAlertRequest{}
 
 	if val, success := getVal("message", c); success {
 		req.Message = val
 	}
-	if val, success := getVal("teams", c); success {
-		teamNames := strings.Split(val, ",")
+	responders := generateResponders(c, alert.TeamResponder, "teams")
+	responders = append(responders, generateResponders(c, alert.UserResponder, "users")...)
+	responders = append(responders, generateResponders(c, alert.EscalationResponder, "escalations")...)
+	responders = append(responders, generateResponders(c, alert.ScheduleResponder, "schedules")...)
 
-		var teams []alertsv2.TeamRecipient
-
-		for _, name := range teamNames {
-			teams = append(teams, &alertsv2.Team{Name: name})
-		}
-		req.Teams = teams
-	}
-
-	if _, success := getVal("recipients", c); success {
-		printWarningMessage("WARNING: recipients param is deprecated and the value is ignoring")
-	}
+	req.Responders = responders
 
 	if val, success := getVal("alias", c); success {
 		req.Alias = val
@@ -58,9 +60,8 @@ func CreateAlertAction(c *gcli.Context) {
 	if val, success := getVal("entity", c); success {
 		req.Entity = val
 	}
-
 	if val, success := getVal("priority", c); success {
-		req.Priority = alertsv2.Priority(val)
+		req.Priority = alert.Priority(val)
 	}
 
 	req.User = grabUsername(c)
@@ -72,15 +73,33 @@ func CreateAlertAction(c *gcli.Context) {
 		req.Details = extractDetailsFromCommand(c)
 	}
 
-	printVerboseMessage("Create alert request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Create alert request prepared from flags, sending request to Opsgenie...")
 
-	resp, err := cli.Create(req)
+	resp, err := cli.Create(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 	printVerboseMessage("Alert will be created.")
-	fmt.Printf("requestId=%s\n", resp.RequestID)
+	fmt.Printf("requestId=%s\n", resp.RequestId)
+}
+
+func generateResponders(c *gcli.Context, responderType alert.ResponderType, parameter string) []alert.Responder {
+	if val, success := getVal(parameter, c); success {
+		responderNames := strings.Split(val, ",")
+
+		var responders []alert.Responder
+
+		for _, name := range responderNames {
+			responders = append(responders, alert.Responder{
+				Name:     name,
+				Username: name,
+				Type:     responderType,
+			})
+		}
+		return responders
+	}
+	return nil
 }
 
 func extractDetailsFromCommand(c *gcli.Context) map[string]string {
@@ -101,26 +120,22 @@ func extractDetailsFromCommand(c *gcli.Context) map[string]string {
 	return details
 }
 
-// GetAlertAction retrieves specified alert details from OpsGenie.
+// GetAlertAction retrieves specified alert details from Opsgenie.
 func GetAlertAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
-	req := alertsv2.GetAlertRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.GetAlertRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
-	printVerboseMessage("Get alert request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Get alert request prepared from flags, sending request to Opsgenie...")
 
-	resp, err := cli.Get(req)
+	resp, err := cli.Get(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
@@ -130,7 +145,7 @@ func GetAlertAction(c *gcli.Context) {
 	printVerboseMessage("Got Alert successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
-		output, err := resultToYAML(resp.Alert)
+		output, err := resultToYAML(resp)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -138,7 +153,7 @@ func GetAlertAction(c *gcli.Context) {
 		fmt.Printf("%s\n", output)
 	default:
 		isPretty := c.IsSet("pretty")
-		output, err := resultToJSON(resp.Alert, isPretty)
+		output, err := resultToJSON(resp, isPretty)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -147,49 +162,41 @@ func GetAlertAction(c *gcli.Context) {
 	}
 }
 
-// AttachFileAction attaches a file to an alert at OpsGenie.
+// AttachFileAction attaches a file to an alert at Opsgenie.
 func AttachFileAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.AddAlertAttachmentRequest{
-		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
-	}
+	req := alert.CreateAlertAttachmentRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
+	req.IdentifierType = grabIdentifierType(c)
+	if val, success := getVal("filePath", c); success {
+		req.FilePath = val
 	}
-
-	if val, success := getVal("tinyId", c); success {
-		req.TinyID = val
+	if val, success := getVal("fileName", c); success {
+		req.FileName = val
 	}
-
-	if val, success := getVal("attachment", c); success {
-		req.AttachmentFilePath = val
-	}
-
 	if val, success := getVal("indexFile", c); success {
 		req.IndexFile = val
 	}
 
 	req.User = grabUsername(c)
 
-	printVerboseMessage("Attach request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Attach request prepared from flags, sending request to Opsgenie..")
 
-	response, err := cli.AttachFile(req)
+	response, err := cli.CreateAlertAttachments(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
 	printVerboseMessage("File attached to alert successfully.")
-	fmt.Printf("Result : %s\n", response.Result)
+	fmt.Printf("Result: %s\n", response.Result)
 }
 
 // GetAttachmentAction retrieves a download link to specified alert attachment
@@ -200,37 +207,28 @@ func GetAttachmentAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 
-	req := alertsv2.GetAlertAttachmentRequest{
-		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
-	}
+	req := alert.GetAttachmentRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-
-	if val, success := getVal("tinyId", c); success {
-		req.TinyID = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
 	if val, success := getVal("attachmentId", c); success {
 		req.AttachmentId = val
 	}
 
-	printVerboseMessage("Get alert attachment request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Get alert attachment request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.GetAttachmentFile(req)
+	resp, err := cli.GetAlertAttachment(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
 	printVerboseMessage("Got Alert Attachment successfully, and will print download link.")
-	fmt.Println("Download Link: ");
-	fmt.Printf("%s\n", resp.Attachment.DownloadLink)
+	fmt.Println("Download Link: ")
+	fmt.Printf("%s\n", resp.Url)
 }
 
 // DownloadAttachmentAction downloads the attachment specified with attachmentId for given alert
@@ -242,21 +240,12 @@ func DownloadAttachmentAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 
-	req := alertsv2.GetAlertAttachmentRequest{
-		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
-	}
+	req := alert.GetAttachmentRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-
-	if val, success := getVal("tinyId", c); success {
-		req.TinyID = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
 	if val, success := getVal("attachmentId", c); success {
 		req.AttachmentId = val
@@ -266,16 +255,16 @@ func DownloadAttachmentAction(c *gcli.Context) {
 		destinationPath = val
 	}
 
-	printVerboseMessage("Download alert attachment request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Download alert attachment request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.GetAttachmentFile(req)
+	resp, err := cli.GetAlertAttachment(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
-	fileName := resp.Attachment.Name
-	downloadLink := resp.Attachment.DownloadLink
+	fileName := resp.Name
+	downloadLink := resp.Url
 
 	var output *os.File
 
@@ -314,25 +303,16 @@ func ListAlertAttachmentsAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 
-	req := alertsv2.ListAlertAttachmentRequest{
-		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
-	}
+	req := alert.ListAttachmentsRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
+	req.IdentifierType = grabIdentifierType(c)
 
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	printVerboseMessage("List alert attachments request prepared from flags, sending request to Opsgenie..")
 
-	if val, success := getVal("tinyId", c); success {
-		req.TinyID = val
-	}
-
-	printVerboseMessage("List alert attachments request prepared from flags, sending request to OpsGenie..")
-
-	resp, err := cli.ListAlertAttachments(req)
+	resp, err := cli.ListAlertsAttachments(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
@@ -342,7 +322,7 @@ func ListAlertAttachmentsAction(c *gcli.Context) {
 	printVerboseMessage("List Alert Attachment successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
-		output, err := resultToYAML(resp.AlertAttachments)
+		output, err := resultToYAML(resp.Attachment)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -350,7 +330,7 @@ func ListAlertAttachmentsAction(c *gcli.Context) {
 		fmt.Printf("%s\n", output)
 	default:
 		isPretty := c.IsSet("pretty")
-		output, err := resultToJSON(resp.AlertAttachments, isPretty)
+		output, err := resultToJSON(resp.Attachment, isPretty)
 
 		if err != nil {
 			fmt.Println(err.Error())
@@ -368,57 +348,44 @@ func DeleteAlertAttachmentAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 
-	req := alertsv2.DeleteAlertAttachmentRequest{
-		AttachmentAlertIdentifier: &alertsv2.AttachmentAlertIdentifier{},
-	}
+	req := alert.DeleteAttachmentRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-
-	if val, success := getVal("tinyId", c); success {
-		req.TinyID = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
 	if val, success := getVal("attachmentId", c); success {
 		req.AttachmentId = val
 	}
 
-
 	printVerboseMessage("Delete alert attachment request prepared from flags, sending request to OpsGenie..")
 
-	resp, err := cli.DeleteAttachment(req)
+	resp, err := cli.DeleteAlertAttachment(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Alert attachment will be deleted. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Alert attachment will be deleted. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 	fmt.Println("Result: " + resp.Result)
 }
 
-// AcknowledgeAction acknowledges an alert at OpsGenie.
+// AcknowledgeAction acknowledges an alert at Opsgenie.
 func AcknowledgeAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.AcknowledgeRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.AcknowledgeAlertRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
+
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
 		req.Source = val
@@ -427,108 +394,35 @@ func AcknowledgeAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Acknowledge alert request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Acknowledge alert request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.Acknowledge(req)
+	resp, err := cli.Acknowledge(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Acknowledge request will be processed. RequestID " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Acknowledge request will be processed. RequestID " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// RenotifyAction re-notifies recipients at OpsGenie.
-func RenotifyAction(c *gcli.Context) {
-	printWarningMessage("WARNING: `Renotify` is deprecated and will be removed!")
-	cli, err := OldAlertClient(c)
-	if err != nil {
-		os.Exit(1)
-	}
-
-	req := alerts.RenotifyAlertRequest{}
-	if val, success := getVal("id", c); success {
-		req.ID = val
-	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-	if val, success := getVal("recipients", c); success {
-		req.Recipients = strings.Split(val, ",")
-	}
-	req.User = grabUsername(c)
-	if val, success := getVal("source", c); success {
-		req.Source = val
-	}
-	if val, success := getVal("note", c); success {
-		req.Note = val
-	}
-
-	printVerboseMessage("Renotify request prepared from flags, sending request to OpsGenie..")
-
-	_, err = cli.Renotify(req)
-	if err != nil {
-		fmt.Printf("%s\n", err.Error())
-		os.Exit(1)
-	}
-	printVerboseMessage("Renotified successfully.")
-}
-
-// TakeOwnershipAction takes the ownership of an alert at OpsGenie.
-func TakeOwnershipAction(c *gcli.Context) {
-	printWarningMessage("WARNING: `Take Ownership` is deprecated and will be removed!")
-	cli, err := OldAlertClient(c)
-	if err != nil {
-		os.Exit(1)
-	}
-
-	req := alerts.TakeOwnershipAlertRequest{}
-	if val, success := getVal("id", c); success {
-		req.ID = val
-	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-	req.User = grabUsername(c)
-	if val, success := getVal("source", c); success {
-		req.Source = val
-	}
-	if val, success := getVal("note", c); success {
-		req.Note = val
-	}
-
-	printVerboseMessage("Take ownership request prepared from flags, sending request to OpsGenie..")
-
-	_, err = cli.TakeOwnership(req)
-	if err != nil {
-		fmt.Printf("%s\n", err.Error())
-		os.Exit(1)
-	}
-	printVerboseMessage("Ownership taken successfully.")
-}
-
-// AssignOwnerAction assigns the specified user as the owner of the alert at OpsGenie.
+// AssignOwnerAction assigns the specified user as the owner of the alert at Opsgenie.
 func AssignOwnerAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.AssignAlertRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.AssignRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-	if val, success := getVal("owner", c); success {
-		req.Owner = alertsv2.User{Username: val}
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
+	if val, success := getVal("owner", c); success {
+		req.Owner = alert.User{Username: val}
+	}
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
 		req.Source = val
@@ -537,35 +431,33 @@ func AssignOwnerAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Assign ownership request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Assign ownership request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.Assign(req)
+	resp, err := cli.AssignAlert(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Ownership assignment request will be processed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Ownership assignment request will be processed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// AddTeamAction adds a team to an alert at OpsGenie.
+// AddTeamAction adds a team to an alert at Opsgenie.
 func AddTeamAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
-	req := alertsv2.AddTeamToAlertRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.AddTeamRequest{}
+
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
+
 	if val, success := getVal("team", c); success {
-		req.Team = alertsv2.Team{Name: val}
+		req.Team = alert.Team{Name: val}
 	}
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
@@ -575,35 +467,38 @@ func AddTeamAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Add team request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Add team request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.AddTeamToAlert(req)
+	resp, err := cli.AddTeam(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Add team request will be processed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Add team request will be processed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// AddRecipientAction adds recipient to an alert at OpsGenie.
-func AddRecipientAction(c *gcli.Context) {
-	printWarningMessage("WARNING: `Add recipient` feature is deprecated and will be removed!")
-
-	cli, err := OldAlertClient(c)
+// AddResponderAction adds responder to an alert at Opsgenie.
+func AddResponderAction(c *gcli.Context) {
+	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
+	req := alert.AddResponderRequest{}
 
-	req := alerts.AddRecipientAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-	if val, success := getVal("recipient", c); success {
-		req.Recipient = val
+	req.IdentifierType = grabIdentifierType(c)
+
+	if valType, success := getVal("type", c); success {
+		if val, success := getVal("responder", c); success {
+			req.Responder = alert.Responder{
+				Type:     alert.ResponderType(valType),
+				Name:     val,
+				Username: val,
+			}
+		}
 	}
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
@@ -613,32 +508,30 @@ func AddRecipientAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Add recipient request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Add responder request prepared from flags, sending request to Opsgenie..")
 
-	_, err = cli.AddRecipient(req)
+	resp, err := cli.AddResponder(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Recipient added successfully.")
+	printVerboseMessage("Add responder request will be processed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// AddTagsAction adds tags to an alert at OpsGenie.
+// AddTagsAction adds tags to an alert at Opsgenie.
 func AddTagsAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.AddTagsToAlertRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.AddTagsRequest{}
+
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 	if val, success := getVal("tags", c); success {
 		req.Tags = strings.Split(val, ",")
 	}
@@ -650,34 +543,31 @@ func AddTagsAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Add tag request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Add tag request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.AddTags(req)
+	resp, err := cli.AddTags(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Add tags request will be processed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Add tags request will be processed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// AddNoteAction adds a note to an alert at OpsGenie.
+// AddNoteAction adds a note to an alert at Opsgenie.
 func AddNoteAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.AddNoteRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.AddNoteRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
+
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
 		req.Source = val
@@ -686,39 +576,34 @@ func AddNoteAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Add note request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Add note request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.AddNote(req)
+	resp, err := cli.AddNote(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Add note request will be processed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Add note request will be processed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// ExecuteActionAction executes a custom action on an alert at OpsGenie.
+// ExecuteActionAction executes a custom action on an alert at Opsgenie.
 func ExecuteActionAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.ExecuteCustomActionRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.ExecuteCustomActionAlertRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-	action, success := getVal("action", c)
-	if success {
-		req.ActionName = action
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
+	if action, success := getVal("action", c); success {
+		req.Action = action
+	}
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
 		req.Source = val
@@ -727,33 +612,29 @@ func ExecuteActionAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Execute action request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Execute action request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.ExecuteCustomAction(req)
+	resp, err := cli.ExecuteCustomAction(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Execute custom action request will be processed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Execute custom action request will be processed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// CloseAlertAction closes an alert at OpsGenie.
+// CloseAlertAction closes an alert at Opsgenie.
 func CloseAlertAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.CloseRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.CloseAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
 		req.Source = val
@@ -761,65 +642,58 @@ func CloseAlertAction(c *gcli.Context) {
 	if val, success := getVal("note", c); success {
 		req.Note = val
 	}
-	if _, success := getVal("notify", c); success {
-		printWarningMessage("WARNING: notify is deprecated for removal and ignoring")
-	}
 
-	printVerboseMessage("Close alert request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Close alert request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.Close(req)
+	resp, err := cli.Close(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Alert will be closed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Alert will be closed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// DeleteAlertAction deletes an alert at OpsGenie.
+// DeleteAlertAction deletes an alert at Opsgenie.
 func DeleteAlertAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.DeleteAlertRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.DeleteAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
-	req.User = grabUsername(c)
+	req.IdentifierType = grabIdentifierType(c)
 	if val, success := getVal("source", c); success {
 		req.Source = val
 	}
 
-	printVerboseMessage("Delete alert request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Delete alert request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.Delete(req)
+	resp, err := cli.Delete(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Alert will be deleted. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Alert will be deleted. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// ListAlertsAction retrieves alert details from OpsGenie.
+// ListAlertsAction retrieves alert details from Opsgenie.
 func ListAlertsAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
+
 	req := generateListAlertRequest(c)
 
-	printVerboseMessage("List alerts request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("List alerts request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.List(req)
+	resp, err := cli.List(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
@@ -846,8 +720,8 @@ func ListAlertsAction(c *gcli.Context) {
 	}
 }
 
-func generateListAlertRequest(c *gcli.Context) (alertsv2.ListAlertRequest) {
-	req := alertsv2.ListAlertRequest{}
+func generateListAlertRequest(c *gcli.Context) alert.ListAlertRequest {
+	req := alert.ListAlertRequest{}
 
 	if val, success := getVal("limit", c); success {
 		limit, err := strconv.ParseUint(val, 10, 64)
@@ -856,20 +730,23 @@ func generateListAlertRequest(c *gcli.Context) (alertsv2.ListAlertRequest) {
 		}
 		req.Limit = int(limit)
 	}
-	if val, success := getVal("sortBy", c); success {
-		req.Sort = alertsv2.SortField(val)
+	if val, success := getVal("sort", c); success {
+		req.Sort = alert.SortField(val)
 	}
 	if val, success := getVal("order", c); success {
-		req.Order = alertsv2.Order(val)
+		req.Order = alert.Order(val)
 	}
-	if val, success := getVal("searchID", c); success {
+	if val, success := getVal("searchIdentifier", c); success {
 		req.SearchIdentifier = val
-		req.SearchIdentifierType = "id"
 	}
 
-	if val, success := getVal("searchName", c); success {
-		req.SearchIdentifier = val
-		req.SearchIdentifierType = "name"
+	if val, success := getVal("searchIdentifierType", c); success {
+		if alert.SearchIdentifierType(val) == alert.NAME {
+			req.SearchIdentifierType = alert.NAME
+		} else {
+			req.SearchIdentifierType = alert.ID
+
+		}
 	}
 
 	if val, success := getVal("offset", c); success {
@@ -881,15 +758,14 @@ func generateListAlertRequest(c *gcli.Context) (alertsv2.ListAlertRequest) {
 	}
 
 	if val, success := getVal("query", c); success {
-		req.Query = val;
-		printVerboseMessage("query is given other fields is ignoring")
+		req.Query = val
 	} else {
 		generateQueryUsingOldStyleParams(c, &req)
 	}
-
 	return req
 }
-func generateQueryUsingOldStyleParams(c *gcli.Context, req *alertsv2.ListAlertRequest) {
+
+func generateQueryUsingOldStyleParams(c *gcli.Context, req *alert.ListAlertRequest) {
 	var queries []string
 	if val, success := getVal("createdAfter", c); success {
 		createdAfter, err := strconv.ParseUint(val, 10, 64)
@@ -944,11 +820,11 @@ func generateQueryUsingOldStyleParams(c *gcli.Context, req *alertsv2.ListAlertRe
 		queries = append(queries, tagsPart)
 	}
 	if len(queries) != 0 {
-		req.Query = strings.Join(queries, " AND ");
+		req.Query = strings.Join(queries, " AND ")
 	}
 }
 
-// CountAlertsAction retrieves number of alerts from OpsGenie.
+// CountAlertsAction retrieves number of alerts from Opsgenie.
 func CountAlertsAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
@@ -956,9 +832,9 @@ func CountAlertsAction(c *gcli.Context) {
 	}
 	req := generateListAlertRequest(c)
 
-	printVerboseMessage("Count alerts request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Count alerts request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.List(req)
+	resp, err := cli.List(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
@@ -966,52 +842,43 @@ func CountAlertsAction(c *gcli.Context) {
 	fmt.Printf("%d\n", len(resp.Alerts))
 }
 
-// ListAlertNotesAction retrieves specified alert notes from OpsGenie.
+// ListAlertNotesAction retrieves specified alert notes from Opsgenie.
 func ListAlertNotesAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.ListAlertNotesRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.ListAlertNotesRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
 	if val, success := getVal("limit", c); success {
 		limit, err := strconv.ParseUint(val, 10, 64)
 		if err != nil {
 			os.Exit(2)
 		}
-		req.Limit = int(limit)
+		req.Limit = uint32(limit)
 	}
 
 	if val, success := getVal("order", c); success {
-		req.Order = alertsv2.Order(val)
+		req.Order = alert.Order(val)
 	}
 
 	if val, success := getVal("direction", c); success {
-		req.Direction = alertsv2.Direction(val)
+		req.Direction = alert.RequestDirection(val)
 	}
 
 	if val, success := getVal("offset", c); success {
-		req.Offset = val;
-	}
-
-	if val, success := getVal("lastKey", c); success && req.Offset == "" {
 		req.Offset = val
-		printWarningMessage("WARNING: lastKey param is deprecated for removal")
 	}
-	printVerboseMessage("List alert notes request prepared from flags, sending request to OpsGenie..")
 
-	resp, err := cli.ListAlertNotes(req)
+	printVerboseMessage("List alert notes request prepared from flags, sending request to Opsgenie..")
+
+	resp, err := cli.ListAlertNotes(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
@@ -1021,7 +888,7 @@ func ListAlertNotesAction(c *gcli.Context) {
 	printVerboseMessage("Alert notes listed successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
-		output, err := resultToYAML(resp.AlertNotes)
+		output, err := resultToYAML(resp.AlertLog)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -1029,7 +896,7 @@ func ListAlertNotesAction(c *gcli.Context) {
 		fmt.Printf("%s\n", output)
 	default:
 		isPretty := c.IsSet("pretty")
-		output, err := resultToJSON(resp.AlertNotes, isPretty)
+		output, err := resultToJSON(resp.AlertLog, isPretty)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -1038,51 +905,42 @@ func ListAlertNotesAction(c *gcli.Context) {
 	}
 }
 
-// ListAlertLogsAction retrieves specified alert logs from OpsGenie.
+// ListAlertLogsAction retrieves specified alert logs from Opsgenie.
 func ListAlertLogsAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
-	req := alertsv2.ListAlertLogsRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.ListAlertLogsRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
 	if val, success := getVal("limit", c); success {
 		limit, err := strconv.ParseUint(val, 10, 64)
 		if err != nil {
 			os.Exit(2)
 		}
-		req.Limit = int(limit)
+		req.Limit = uint32(limit)
 	}
 
 	if val, success := getVal("order", c); success {
-		req.Order = alertsv2.Order(val)
+		req.Order = alert.Order(val)
 	}
 
 	if val, success := getVal("direction", c); success {
-		req.Direction = alertsv2.Direction(val)
+		req.Direction = alert.RequestDirection(val)
 	}
 
 	if val, success := getVal("offset", c); success {
 		req.Offset = val
 	}
 
-	if val, success := getVal("lastKey", c); success && req.Offset == "" {
-		req.Offset = val
-		printWarningMessage("WARNING: lastKey param is deprecated for removal")
-	}
-	printVerboseMessage("List alert notes request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("List alert notes request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.ListAlertLogs(req)
+	resp, err := cli.ListAlertLogs(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
@@ -1092,7 +950,7 @@ func ListAlertLogsAction(c *gcli.Context) {
 	printVerboseMessage("Alert notes listed successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
-		output, err := resultToYAML(resp.AlertLogs)
+		output, err := resultToYAML(resp.AlertLog)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -1100,7 +958,7 @@ func ListAlertLogsAction(c *gcli.Context) {
 		fmt.Printf("%s\n", output)
 	default:
 		isPretty := c.IsSet("pretty")
-		output, err := resultToJSON(resp.AlertLogs, isPretty)
+		output, err := resultToJSON(resp.AlertLog, isPretty)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -1109,25 +967,22 @@ func ListAlertLogsAction(c *gcli.Context) {
 	}
 }
 
-// ListAlertRecipientsAction retrieves specified alert recipients from OpsGenie.
+// ListAlertRecipientsAction retrieves specified alert recipients from Opsgenie.
 func ListAlertRecipientsAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
-	req := alertsv2.ListAlertRecipientsRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.ListAlertRecipientRequest{}
+
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
-	printVerboseMessage("List alert recipients request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("List alert recipients request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.ListAlertRecipients(req)
+	resp, err := cli.ListAlertRecipients(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
@@ -1137,7 +992,7 @@ func ListAlertRecipientsAction(c *gcli.Context) {
 	printVerboseMessage("Alert recipients listed successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
-		output, err := resultToYAML(resp.Recipients)
+		output, err := resultToYAML(resp.AlertRecipients)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -1145,7 +1000,7 @@ func ListAlertRecipientsAction(c *gcli.Context) {
 		fmt.Printf("%s\n", output)
 	default:
 		isPretty := c.IsSet("pretty")
-		output, err := resultToJSON(resp.Recipients, isPretty)
+		output, err := resultToJSON(resp.AlertRecipients, isPretty)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -1154,23 +1009,19 @@ func ListAlertRecipientsAction(c *gcli.Context) {
 	}
 }
 
-// UnAcknowledgeAction unacknowledges an alert at OpsGenie.
+// UnAcknowledgeAction unAcknowledges an alert at Opsgenie.
 func UnAcknowledgeAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.UnacknowledgeRequest{
-		Identifier: &alertsv2.Identifier{},
-
-	}
+	req := alert.UnacknowledgeAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
+
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
 		req.Source = val
@@ -1179,39 +1030,30 @@ func UnAcknowledgeAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Unacknowledge alert request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("UnAcknowledge alert request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.Unacknowledge(req)
+	resp, err := cli.Unacknowledge(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Alert will be unacknowledged. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Alert will be unAcknowledged. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// SnoozeAction snoozes an alert at OpsGenie.
+// SnoozeAction snoozes an alert at Opsgenie.
 func SnoozeAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.SnoozeRequest{}
-	req.Identifier = &alertsv2.Identifier{}
-
-	if _, success := getVal("timezone", c); success {
-		printWarningMessage("ERROR: timezone is deprecated and ignoring please use ISO8601 format for `endDate` param to define timezone")
-		os.Exit(1)
-	}
-
+	req := alert.SnoozeAlertRequest{}
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
 
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
@@ -1232,35 +1074,33 @@ func SnoozeAction(c *gcli.Context) {
 
 		req.EndTime = endTime
 	}
-	printVerboseMessage("Snooze request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Snooze request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.Snooze(req)
+	resp, err := cli.Snooze(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("will be snoozed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("will be snoozed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// RemoveTagsAction removes tags from an alert at OpsGenie.
+// RemoveTagsAction removes tags from an alert at Opsgenie.
 func RemoveTagsAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.RemoveTagsRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.RemoveTagsRequest{}
+
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
+
 	if val, success := getVal("tags", c); success {
-		req.Tags = strings.Split(val, ",")
+		req.Tags = val
 	}
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
@@ -1270,33 +1110,31 @@ func RemoveTagsAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Remove tags request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Remove tags request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.RemoveTags(req)
+	resp, err := cli.RemoveTags(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Tags will be removed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Tags will be removed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// AddDetailsAction adds details to an alert at OpsGenie.
+// AddDetailsAction adds details to an alert at Opsgenie.
 func AddDetailsAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.AddDetailsRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.AddDetailsRequest{}
+
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
+
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
 		req.Source = val
@@ -1307,35 +1145,33 @@ func AddDetailsAction(c *gcli.Context) {
 	if c.IsSet("D") {
 		req.Details = extractDetailsFromCommand(c)
 	}
-	printVerboseMessage("Add details request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Add details request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.AddDetails(req)
+	resp, err := cli.AddDetails(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Details will be added. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Details will be added. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
-// RemoveDetailsAction removes details from an alert at OpsGenie.
+// RemoveDetailsAction removes details from an alert at Opsgenie.
 func RemoveDetailsAction(c *gcli.Context) {
 	cli, err := NewAlertClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := alertsv2.RemoveDetailsRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.RemoveDetailsRequest{}
+
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
+
 	if val, success := getVal("keys", c); success {
-		req.Keys = strings.Split(val, ",")
+		req.Keys = val
 	}
 	req.User = grabUsername(c)
 	if val, success := getVal("source", c); success {
@@ -1345,15 +1181,15 @@ func RemoveDetailsAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Remove details request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Remove details request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.RemoveDetails(req)
+	resp, err := cli.RemoveDetails(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Details will be removed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Details will be removed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
 }
 
 // EscalateToNextAction processes the next available rule in the specified escalation.
@@ -1363,16 +1199,13 @@ func EscalateToNextAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 
-	req := alertsv2.EscalateToNextRequest{
-		Identifier: &alertsv2.Identifier{},
-	}
+	req := alert.EscalateToNextRequest{}
 
 	if val, success := getVal("id", c); success {
-		req.ID = val
+		req.IdentifierValue = val
 	}
-	if val, success := getVal("alias", c); success {
-		req.Alias = val
-	}
+	req.IdentifierType = grabIdentifierType(c)
+
 	if val, success := getVal("escalationId", c); success {
 		req.Escalation.ID = val
 	}
@@ -1387,13 +1220,24 @@ func EscalateToNextAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Escalate to next request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("Escalate to next request prepared from flags, sending request to Opsgenie..")
 
-	resp, err := cli.EscalateToNext(req)
+	resp, err := cli.EscalateToNext(nil, &req)
 	if err != nil {
 		fmt.Printf("%s\n", err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Escalated to next request will be processed. RequestID: " + resp.RequestID)
-	fmt.Println("RequestID: " + resp.RequestID)
+	printVerboseMessage("Escalated to next request will be processed. RequestID: " + resp.RequestId)
+	fmt.Println("RequestID: " + resp.RequestId)
+}
+
+func grabIdentifierType(c *gcli.Context) alert.AlertIdentifier {
+	if val, success := getVal("identifier", c); success {
+		if val == "tiny" {
+			return alert.TINYID
+		} else if val == "alias" {
+			return alert.ALIAS
+		}
+	}
+	return alert.ALERTID
 }

@@ -1,10 +1,10 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 	gcli "github.com/codegangsta/cli"
-	ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
-	cl "github.com/opsgenie/opsgenie-go-sdk/logs"
+	"github.com/opsgenie/opsgenie-go-sdk-v2/logs"
 	"io"
 	"net/http"
 	"os"
@@ -12,13 +12,24 @@ import (
 	"time"
 )
 
+func NewCustomerLogClient(c *gcli.Context) (*logs.Client, error) {
+	logsCli, cliErr := logs.NewClient(getConfigurations(c))
+	if cliErr != nil {
+		message := "Can not create the logs client. " + cliErr.Error()
+		fmt.Printf("%s\n", message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("Logs Client created.")
+	return logsCli, nil
+}
+
 func DownloadLogs(c *gcli.Context) {
 	cli, err := NewCustomerLogClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	req := cl.ListLogFilesRequest{}
+	req := logs.ListLogFilesRequest{}
 	if val, success := getVal("start", c); success {
 		req.Marker = val
 	}
@@ -35,11 +46,9 @@ func DownloadLogs(c *gcli.Context) {
 	if val, success := getVal("end", c); success {
 		endDate = val
 	}
-
-	printVerboseMessage("List Downloadable Logs request prepared from flags, sending request to OpsGenie..")
-
+	printVerboseMessage("List Downloadable Logs request prepared from flags, sending request to Opsgenie..")
 	for {
-		response, err := cli.ListLogFiles(req)
+		response, err := cli.ListLogFiles(nil, &req)
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
 			os.Exit(1)
@@ -52,21 +61,25 @@ func DownloadLogs(c *gcli.Context) {
 	}
 }
 
-func getLinksAndDownloadTheFile(logs []cl.Log, endDate string, filePath string, cli *ogcli.OpsGenieLogClient) (string) {
+func getLinksAndDownloadTheFile(receivedLogs []logs.Log, endDate string, filePath string, cli *logs.Client) string {
 	currentFileDate := ""
-	for _, logg := range logs {
-		downloadResponse, err := cli.LogFileDownloadLink(cl.GenerateLogFileDownloadRequest{
-			Filename: logg.Filename,
+	for _, log := range receivedLogs {
+		downloadResponse, err := cli.GenerateLogFileDownloadLink(nil, &logs.GenerateLogFileDownloadLinkRequest{
+			FileName: log.FileName,
 		})
 		time.Sleep(time.Duration(500 * time.Millisecond))
 		if err != nil {
-			printVerboseMessage(fmt.Sprintf("Error: %s while downloading log file: %s, but proceding rest of the log files", err.Error(), logg.Filename))
+			printVerboseMessage(fmt.Sprintf("Error: %s while downloading log file: %s, but proceding rest of the log files", err.Error(), log.FileName))
 			continue
 		}
-		currentFileDate = logg.Filename[:len(logg.Filename)-5]
+		currentFileDate = log.FileName[:len(log.FileName)-5]
 		if endDate == "" || checkDate(endDate, currentFileDate) {
-			downloadFile(filePath+fmt.Sprintf("/%s", logg.Filename), downloadResponse)
-			printVerboseMessage(fmt.Sprintf("Successfully downloaded file: %s", logg.Filename))
+			err := downloadFile(filePath+fmt.Sprintf("/%s", log.FileName), downloadResponse.LogFileDownloadLink)
+			if err != nil {
+				fmt.Printf("%s\n", err.Error())
+				os.Exit(1)
+			}
+			printVerboseMessage(fmt.Sprintf("Successfully downloaded file: %s", log.FileName))
 		}
 	}
 	return currentFileDate
@@ -96,7 +109,7 @@ func downloadFile(filepath string, url string) error {
 	return nil
 }
 
-func checkDate(endDate string, currentFileDate string) (bool) {
+func checkDate(endDate string, currentFileDate string) bool {
 	a := strings.Split(endDate, "-")
 	b := strings.Split(currentFileDate, "-")
 	for i, s := range a {

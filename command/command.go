@@ -16,16 +16,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
-	"time"
-
 	gcli "github.com/codegangsta/cli"
-	ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
-	log "github.com/opsgenie/opsgenie-go-sdk/logging"
+	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-lamp/cfg"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
+	"os"
+	"strings"
 )
 
 var verbose = false
@@ -34,13 +30,10 @@ func printVerboseMessage(message string) {
 	if verbose {
 		fmt.Println(message)
 	}
-	if log.Logger() != nil {
-		log.Logger().Debug(message)
+	logger := client.Config{}.Logger
+	if logger != nil {
+		logger.Debug(message)
 	}
-}
-
-func printWarningMessage(message string) {
-	fmt.Println(message)
 }
 
 /*
@@ -91,7 +84,8 @@ func isEmpty(argName string, arg string, c *gcli.Context) bool {
 	return false
 }
 
-func proxyConf(host string, port int) (proxy *ogcli.ProxyConfiguration) {
+// TODO: comment out for proxy and connection timeout
+/*func proxyConf(host string, port int) (proxy *ogcli.ProxyConfiguration) {
 	printVerboseMessage("Configuring proxy settings with host " + host + " and port " + strconv.Itoa(port))
 	pc := new(ogcli.ProxyConfiguration)
 	pc.Protocol = cfg.Get("proxyProtocol")
@@ -139,125 +133,31 @@ func parseDuration(key string) time.Duration {
 	}
 	printVerboseMessage("Could not parse [" + key + "] with value [" + strDuration + "].")
 	return 0
-}
+}*/
 
-func initialize(c *gcli.Context) *ogcli.OpsGenieClient {
+func getConfigurations(c *gcli.Context) *client.Config {
 	if c.IsSet("v") {
 		verbose = true
 		printVerboseMessage("Will execute command in verbose mode.")
 	}
+
 	readConfigFile(c)
 	apiKey := grabAPIKey(c)
-	cli := new(ogcli.OpsGenieClient)
-	cli.SetAPIKey(apiKey)
-	if apiURL := cfg.Get("opsgenie.api.url"); apiURL != "" {
-		cli.SetOpsGenieAPIUrl(apiURL)
+	apiURL := cfg.Get("apiUrl")
+	if apiURL == "" {
+		apiURL = string(client.API_URL)
 	}
-	proxyHost := cfg.Get("proxyHost")
-	proxyPort, err := strconv.Atoi(cfg.Get("proxyPort"))
-	if err == nil && proxyPort != 0 && proxyHost != "" {
-		cli.SetProxyConfiguration(proxyConf(proxyHost, proxyPort))
+	config := client.Config{
+		ApiKey:         apiKey,
+		OpsGenieAPIURL: client.ApiUrl(apiURL),
 	}
-	cli.SetHTTPTransportSettings(connectionConf())
-	return cli
-}
-
-// NewAlertClient instantiates a new OpsGenieAlertV2Client.
-func NewAlertClient(c *gcli.Context) (*ogcli.OpsGenieAlertV2Client, error) {
-	cli := initialize(c)
-	alertCli, cliErr := cli.AlertV2()
-
-	if cliErr != nil {
-		message := "Can not create the alert client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
-		return nil, errors.New(message)
+	proxyHost := cfg.Get("proxyHost") // TODO missing proxy configurations
+	proxyPort := cfg.Get("proxyPort")
+	if proxyHost != "" {
+		config.ProxyUrl = proxyHost + ":" + proxyPort
 	}
-	printVerboseMessage("Alert Client created..")
-	return alertCli, nil
-}
-
-// NewAlertClient instantiates a new OpsGenieAlertV2Client.
-func OldAlertClient(c *gcli.Context) (*ogcli.OpsGenieAlertClient, error) {
-	cli := initialize(c)
-	alertCli, cliErr := cli.Alert()
-
-	if cliErr != nil {
-		message := "Can not create the alert client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
-		return nil, errors.New(message)
-	}
-	printVerboseMessage("Alert Client created..")
-	return alertCli, nil
-}
-
-// NewHeartbeatClient instantiates a new OpsGenieHeartbeatClient.
-func NewHeartbeatClient(c *gcli.Context) (*ogcli.OpsGenieHeartbeatClient, error) {
-	cli := initialize(c)
-	hbCli, cliErr := cli.Heartbeat()
-
-	if cliErr != nil {
-		message := "Can not create the heartbeat client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
-		return nil, errors.New(message)
-	}
-	printVerboseMessage("Heartbeat Client created..")
-	return hbCli, nil
-}
-
-// NewIntegrationClient instantiates a new OpsGenieIntegrationClient.
-func NewIntegrationClient(c *gcli.Context) (*ogcli.OpsGenieIntegrationClient, error) {
-	cli := initialize(c)
-	intCli, cliErr := cli.Integration()
-
-	if cliErr != nil {
-		message := "Can not create the integration client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
-		return nil, errors.New(message)
-	}
-	printVerboseMessage("Integration Client created..")
-	return intCli, nil
-}
-
-func NewCustomerLogClient(c *gcli.Context) (*ogcli.OpsGenieLogClient, error) {
-	cli := initialize(c)
-	intCli, cliErr := cli.Log()
-
-	if cliErr != nil {
-		message := "Can not create the log client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
-		return nil, errors.New(message)
-	}
-	printVerboseMessage("Log Client created..")
-	return intCli, nil
-}
-
-// NewPolicyClient instantiates a new OpsGeniePolicyClient.
-func NewPolicyClient(c *gcli.Context) (*ogcli.OpsGeniePolicyClient, error) {
-	cli := initialize(c)
-	polCli, cliErr := cli.Policy()
-
-	if cliErr != nil {
-		message := "Can not create the policy client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
-		return nil, errors.New(message)
-	}
-	printVerboseMessage("Policy Client created..")
-	return polCli, nil
-}
-
-// NewUserClient instantiates a new OpsGenieUserV2Client.
-func NewUserClient(c *gcli.Context) (*ogcli.OpsGenieUserV2Client, error) {
-	cli := initialize(c)
-	userCli, cliErr := cli.UserV2()
-
-	if cliErr != nil {
-		message := "Can not create the user client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
-		return nil, errors.New(message)
-	}
-	printVerboseMessage("User Client created..")
-
-	return userCli, nil
+	// TODO add timeout configurations
+	return &config
 }
 
 /*
@@ -277,7 +177,7 @@ func resultToYAML(data interface{}) (string, error) {
 The 'getAlert' command returns a GetAlertResponse object.
 The 'ResultToJson' function is called whenever "output-format" parameter is
 set to json or not provided. "getAlert" command defaults to JSON format.
-Pretty formating yields an indented style of representation. Pretty formating
+Pretty formatting yields an indented style of representation. Pretty formatting
 is on when the "pretty" flag is provided alongside.
 */
 func resultToJSON(data interface{}, pretty bool) (string, error) {

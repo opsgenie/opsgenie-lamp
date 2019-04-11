@@ -1,4 +1,4 @@
-// Copyright 2015 OpsGenie. All rights reserved.
+// Copyright 2015 Opsgenie. All rights reserved.
 // Use of this source code is governed by a Apache Software
 // license that can be found in the LICENSE file.
 
@@ -6,13 +6,12 @@ package main
 
 import (
 	"fmt"
-	"os"
-
 	gcli "github.com/codegangsta/cli"
 	"github.com/opsgenie/opsgenie-lamp/command"
+	"os"
 )
 
-const lampVersion string = "2.5.1"
+const lampVersion string = "3.0.0"
 
 var commonFlags = []gcli.Flag{
 	gcli.BoolFlag{
@@ -41,7 +40,19 @@ func createAlertCommand() gcli.Command {
 		},
 		gcli.StringFlag{
 			Name:  "teams",
-			Usage: "A comma seperated list of teams",
+			Usage: "A comma separated list of teams",
+		},
+		gcli.StringFlag{
+			Name:  "users",
+			Usage: "A comma separated list of users",
+		},
+		gcli.StringFlag{
+			Name:  "escalations",
+			Usage: "A comma separated list of escalations",
+		},
+		gcli.StringFlag{
+			Name:  "schedules",
+			Usage: "A comma separated list of schedules",
 		},
 		gcli.StringFlag{
 			Name:  "alias",
@@ -82,8 +93,8 @@ func createAlertCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "createAlert",
-		Flags:            flags,
-		Usage:            "Creates an alert at OpsGenie",
+		Flags: flags,
+		Usage: "Creates an alert at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.CreateAlertAction(c)
 			return nil
@@ -99,8 +110,8 @@ func getAlertCommand() gcli.Command {
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be retrieved. Either id or alias must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "output-format",
@@ -114,8 +125,8 @@ func getAlertCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "getAlert",
-		Flags:            flags,
-		Usage:            "Gets an alert content from OpsGenie",
+		Flags: flags,
+		Usage: "Gets an alert content from Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.GetAlertAction(c)
 			return nil
@@ -140,19 +151,20 @@ func listAlertsCommand() gcli.Command {
 		},
 		gcli.StringFlag{
 			Name:  "sortBy",
-			Usage: "createdAt, updatedAt, default is createdAt",
+			Usage: "Name of the field that result set will be sorted by. Default value is createdAt.",
 		},
 		gcli.StringFlag{
 			Name:  "order",
 			Usage: "asc/desc, default: desc",
 		},
 		gcli.StringFlag{
-			Name:  "searchId",
-			Usage: "id of the saved search",
+			Name:  "searchIdentifier",
+			Usage: "Identifier of the saved search query to apply while filtering the alerts",
 		},
 		gcli.StringFlag{
-			Name:  "searchName",
-			Usage: "name of the saved search",
+			Name: "searchIdentifierType",
+			Usage: "Identifier type of the value at searchIdentifier, which can be id or name. Default value is id." +
+				" If searchIdentifier is not provided, this value is ignored.",
 		},
 		gcli.StringFlag{
 			Name:  "output-format",
@@ -166,8 +178,8 @@ func listAlertsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlerts",
-		Flags:            flags,
-		Usage:            "Lists alerts contents from OpsGenie",
+		Flags: flags,
+		Usage: "Lists alerts contents from Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertsAction(c)
 			return nil
@@ -189,8 +201,8 @@ func countAlertsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "countAlerts",
-		Flags:            flags,
-		Usage:            "Counts alerts at OpsGenie",
+		Flags: flags,
+		Usage: "Counts alerts at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.CountAlertsAction(c)
 			return nil
@@ -206,8 +218,8 @@ func listAlertNotesCommand() gcli.Command {
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be retrieved. Either id or alias must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "limit",
@@ -237,8 +249,8 @@ func listAlertNotesCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertNotes",
-		Flags:            flags,
-		Usage:            "Lists alert notes from OpsGenie",
+		Flags: flags,
+		Usage: "Lists alert notes from Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertNotesAction(c)
 			return nil
@@ -254,8 +266,8 @@ func listAlertLogsCommand() gcli.Command {
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be retrieved. Either id or alias must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "limit",
@@ -285,8 +297,8 @@ func listAlertLogsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertLogs",
-		Flags:            flags,
-		Usage:            "Lists alert logs from OpsGenie",
+		Flags: flags,
+		Usage: "Lists alert logs from Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertLogsAction(c)
 			return nil
@@ -302,8 +314,8 @@ func listAlertRecipientsCommand() gcli.Command {
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be retrieved. Either id or alias must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "output-format",
@@ -317,8 +329,8 @@ func listAlertRecipientsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertRecipients",
-		Flags:            flags,
-		Usage:            "Lists alert recipients from OpsGenie",
+		Flags: flags,
+		Usage: "Lists alert recipients from Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertRecipientsAction(c)
 			return nil
@@ -334,8 +346,8 @@ func unAcknowledgeCommand() gcli.Command {
 			Usage: "Id of the alert that will be unacknowledged. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be unacknowledged. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "note",
@@ -348,8 +360,8 @@ func unAcknowledgeCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "unacknowledge",
-		Flags:            flags,
-		Usage:            "Unacknowledges an alert at OpsGenie",
+		Flags: flags,
+		Usage: "UnAcknowledges an alert at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.UnAcknowledgeAction(c)
 			return nil
@@ -366,8 +378,8 @@ func snoozeCommand() gcli.Command {
 			Usage: "Id of the alert that will be snoozed. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be snoozed. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "endDate",
@@ -384,8 +396,8 @@ func snoozeCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "snooze",
-		Flags:            flags,
-		Usage:            "Snoozes an alert at OpsGenie",
+		Flags: flags,
+		Usage: "Snoozes an alert at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.SnoozeAction(c)
 			return nil
@@ -402,8 +414,8 @@ func removeTagsCommand() gcli.Command {
 			Usage: "Id of the alert that the tags will be removed. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the tags will be removed. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "tags",
@@ -420,12 +432,12 @@ func removeTagsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "removeTags",
-		Flags:            flags,
-		Usage:            "Removes tags from an alert at OpsGenie",
+		Flags: flags,
+		Usage: "Removes tags from an alert at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.RemoveTagsAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -436,8 +448,8 @@ func addDetailsCommand() gcli.Command {
 			Usage: "Id of the alert that the new details will be added. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the new details will be added. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "note",
@@ -454,12 +466,12 @@ func addDetailsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addDetails",
-		Flags:            flags,
-		Usage:            "Adds details to an alert at OpsGenie",
+		Flags: flags,
+		Usage: "Adds details to an alert at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.AddDetailsAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -470,8 +482,8 @@ func removeDetailsCommand() gcli.Command {
 			Usage: "Id of the alert that the details will be removed. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the details will be removed. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "keys",
@@ -488,12 +500,12 @@ func removeDetailsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "removeDetails",
-		Flags:            flags,
-		Usage:            "Removes details from an alert at OpsGenie",
+		Flags: flags,
+		Usage: "Removes details from an alert at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.RemoveDetailsAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -504,8 +516,8 @@ func escalateToNextActionCommand() gcli.Command {
 			Usage: "Id of the alert that the next escalation will be processed. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the next escalation will be processed. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "escalationId",
@@ -526,12 +538,12 @@ func escalateToNextActionCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "escalateToNext",
-		Flags:            flags,
-		Usage:            "Esclates to the next rule in the specified escalation at OpsGenie",
+		Flags: flags,
+		Usage: "Escalates to the next rule in the specified escalation at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.EscalateToNextAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -542,16 +554,16 @@ func attachFileCommand() gcli.Command {
 			Usage: "Id of the alert that the file will be attached. Either id, alias or tinyId must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the file will be attached. Either id, alias or tinyId must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
-			Name:  "tinyId",
-			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
-		},
-		gcli.StringFlag{
-			Name:  "attachment",
+			Name:  "filePath",
 			Usage: "Absolute or relative path to the file",
+		},
+		gcli.StringFlag{
+			Name:  "fileName",
+			Usage: "",
 		},
 		gcli.StringFlag{
 			Name:  "indexFile",
@@ -560,8 +572,8 @@ func attachFileCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "attachFile",
-		Flags:            flags,
-		Usage:            "Attaches files to an alert",
+		Flags: flags,
+		Usage: "Attaches files to an alert",
 		Action: func(c *gcli.Context) error {
 			command.AttachFileAction(c)
 			return nil
@@ -577,12 +589,8 @@ func getAttachmentCommand() gcli.Command {
 			Usage: "Id of the alert that the file was attached. Either id, alias or tinyId must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the file was attached. Either id, alias or tinyId must be provided",
-		},
-		gcli.StringFlag{
-			Name:  "tinyId",
-			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "attachmentId",
@@ -596,8 +604,8 @@ func getAttachmentCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "getAttachment",
-		Flags:            flags,
-		Usage:            "Gets the attachment download link for specified alert attachment",
+		Flags: flags,
+		Usage: "Gets the attachment download link for specified alert attachment",
 		Action: func(c *gcli.Context) error {
 			command.GetAttachmentAction(c)
 			return nil
@@ -613,12 +621,8 @@ func downloadAttachmentCommand() gcli.Command {
 			Usage: "Id of the alert that the file was attached. Either id, alias or tinyId must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the file was attached. Either id, alias or tinyId must be provided",
-		},
-		gcli.StringFlag{
-			Name:  "tinyId",
-			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "attachmentId",
@@ -631,8 +635,8 @@ func downloadAttachmentCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "downloadAttachment",
-		Flags:            flags,
-		Usage:            "Downloads the attachment for specified alert attachment",
+		Flags: flags,
+		Usage: "Downloads the attachment for specified alert attachment",
 		Action: func(c *gcli.Context) error {
 			command.DownloadAttachmentAction(c)
 			return nil
@@ -648,12 +652,8 @@ func listAttachmentsCommand() gcli.Command {
 			Usage: "Id of the alert that the file was attached. Either id, alias or tinyId must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the file was attached. Either id, alias or tinyId must be provided",
-		},
-		gcli.StringFlag{
-			Name:  "tinyId",
-			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "output-format",
@@ -663,8 +663,8 @@ func listAttachmentsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAttachments",
-		Flags:            flags,
-		Usage:            "List the attachment meta informations for specified alert",
+		Flags: flags,
+		Usage: "List the attachment meta information for specified alert",
 		Action: func(c *gcli.Context) error {
 			command.ListAlertAttachmentsAction(c)
 			return nil
@@ -680,12 +680,8 @@ func deleteAttachmentCommand() gcli.Command {
 			Usage: "Id of the alert that the file was attached. Either id, alias or tinyId must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the file was attached. Either id, alias or tinyId must be provided",
-		},
-		gcli.StringFlag{
-			Name:  "tinyId",
-			Usage: "TinyID of the alert that the file was attached. Either id, alias or tinyId must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "attachmentId",
@@ -694,8 +690,8 @@ func deleteAttachmentCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "deleteAttachment",
-		Flags:            flags,
-		Usage:            "Delete the attachment with given id for specified alert",
+		Flags: flags,
+		Usage: "Delete the attachment with given id for specified alert",
 		Action: func(c *gcli.Context) error {
 			command.DeleteAlertAttachmentAction(c)
 			return nil
@@ -711,8 +707,8 @@ func acknowledgeCommand() gcli.Command {
 			Usage: "Id of the alert that will be acknowledged. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be acknowledged. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "note",
@@ -725,8 +721,8 @@ func acknowledgeCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "acknowledge",
-		Flags:            flags,
-		Usage:            "Acknowledges an alert at OpsGenie",
+		Flags: flags,
+		Usage: "Acknowledges an alert at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.AcknowledgeAction(c)
 			return nil
@@ -736,70 +732,6 @@ func acknowledgeCommand() gcli.Command {
 
 }
 
-func renotifyCommand() gcli.Command {
-	commandFlags := []gcli.Flag{
-		gcli.StringFlag{
-			Name:  "alertId, id",
-			Usage: "Id of the alert that recipient will be renotified for. Either id or alias must be provided",
-		},
-		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that recipient will be renotified for. Either id or alias must be provided. Alias option can only be used open alerts",
-		},
-		gcli.StringFlag{
-			Name:  "recipients",
-			Usage: "The user names of individual users or names of groups that will be renotified for alert",
-		},
-		gcli.StringFlag{
-			Name:  "note",
-			Usage: "Additional alert note",
-		},
-		gcli.StringFlag{
-			Name:  "source",
-			Usage: "Source of the action",
-		},
-	}
-	flags := append(commonFlags, commandFlags...)
-	cmd := gcli.Command{Name: "renotify",
-		Flags:            flags,
-		Usage:            "Renotifies recipients at OpsGenie.",
-		Action: func(c *gcli.Context) error {
-			command.RenotifyAction(c)
-			return nil
-		}, }
-	return cmd
-}
-
-func takeOwnershipCommand() gcli.Command {
-	commandFlags := []gcli.Flag{
-		gcli.StringFlag{
-			Name:  "alertId, id",
-			Usage: "Id of the alert that will be owned. Either id or alias must be provided",
-		},
-		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be owned. Either id or alias must be provided. Alias option can only be used open alerts",
-		},
-		gcli.StringFlag{
-			Name:  "note",
-			Usage: "Additional alert note",
-		},
-		gcli.StringFlag{
-			Name:  "source",
-			Usage: "Source of the action",
-		},
-	}
-	flags := append(commonFlags, commandFlags...)
-	cmd := gcli.Command{Name: "takeOwnership",
-		Flags:            flags,
-		Usage:            "Takes the ownership of an alert at OpsGenie.",
-		Action: func(c *gcli.Context) error {
-			command.TakeOwnershipAction(c)
-			return nil
-		}, }
-	return cmd
-}
-
 func assignOwnerCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
@@ -807,8 +739,8 @@ func assignOwnerCommand() gcli.Command {
 			Usage: "Id of the alert that will be owned. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be owned. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "owner",
@@ -825,12 +757,12 @@ func assignOwnerCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "assign",
-		Flags:            flags,
-		Usage:            "Assigns the ownership of an alert to the specified user.",
+		Flags: flags,
+		Usage: "Assigns the ownership of an alert to the specified user.",
 		Action: func(c *gcli.Context) error {
 			command.AssignOwnerAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -841,8 +773,8 @@ func addTeamCommand() gcli.Command {
 			Usage: "Id of the alert that the new team will be added. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the new team will be added. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "team",
@@ -859,28 +791,32 @@ func addTeamCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addTeam",
-		Flags:            flags,
-		Usage:            "Adds a new team to an alert.",
+		Flags: flags,
+		Usage: "Adds a new team to an alert.",
 		Action: func(c *gcli.Context) error {
 			command.AddTeamAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
-func addRecipientCommand() gcli.Command {
+func addResponderCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
 			Usage: "Id of the alert that the new recipient will be added. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the new recipient will be added. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
-			Name:  "recipient",
-			Usage: "The recipient that will be added to the alert",
+			Name:  "type",
+			Usage: "The responder type that which is provided at responder.",
+		},
+		gcli.StringFlag{
+			Name:  "responder",
+			Usage: "The responder that will be added to the alert",
 		},
 		gcli.StringFlag{
 			Name:  "note",
@@ -892,13 +828,13 @@ func addRecipientCommand() gcli.Command {
 		},
 	}
 	flags := append(commonFlags, commandFlags...)
-	cmd := gcli.Command{Name: "addRecipient",
-		Flags:            flags,
-		Usage:            "Adds a new recipient to an alert.",
+	cmd := gcli.Command{Name: "addResponder",
+		Flags: flags,
+		Usage: "Adds a new responder to an alert.",
 		Action: func(c *gcli.Context) error {
-			command.AddRecipientAction(c)
+			command.AddResponderAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -909,8 +845,8 @@ func addNoteCommand() gcli.Command {
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be retrieved. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "note",
@@ -923,12 +859,12 @@ func addNoteCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addNote",
-		Flags:            flags,
-		Usage:            "Adds a user comment for an alert.",
+		Flags: flags,
+		Usage: "Adds a user comment for an alert.",
 		Action: func(c *gcli.Context) error {
 			command.AddNoteAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -939,8 +875,8 @@ func addTagsCommand() gcli.Command {
 			Usage: "Id of the alert that the new tags will be added. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the new tags will be added. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "tags",
@@ -957,12 +893,12 @@ func addTagsCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "addTags",
-		Flags:            flags,
-		Usage:            "Adds tags to an alert.",
+		Flags: flags,
+		Usage: "Adds tags to an alert.",
 		Action: func(c *gcli.Context) error {
 			command.AddTagsAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -973,8 +909,8 @@ func executeActionCommand() gcli.Command {
 			Usage: "Id of the alert that the action will be executed on. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that the action will be executed on. Either id or alias must be provided. Alias option can only be used open alerts",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "action",
@@ -991,12 +927,12 @@ func executeActionCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "executeAction",
-		Flags:            flags,
-		Usage:            "Executes alert actions at OpsGenie",
+		Flags: flags,
+		Usage: "Executes alert actions at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.ExecuteActionAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -1007,8 +943,8 @@ func closeAlertCommand() gcli.Command {
 			Usage: "Id of the alert that will be closed. Either id or alias must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "alias",
-			Usage: "Alias of the alert that will be closed. Either id or alias must be provided",
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
 		gcli.StringFlag{
 			Name:  "note",
@@ -1021,12 +957,12 @@ func closeAlertCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "closeAlert",
-		Flags:            flags,
-		Usage:            "Closes an alert at OpsGenie",
+		Flags: flags,
+		Usage: "Closes an alert at Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.CloseAlertAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -1037,18 +973,22 @@ func deleteAlertCommand() gcli.Command {
 			Usage: "Id of the alert that will be deleted",
 		},
 		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
+		},
+		gcli.StringFlag{
 			Name:  "source",
 			Usage: "Source of the action",
 		},
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "deleteAlert",
-		Flags:            flags,
-		Usage:            "Deletes an alert at OpsGenie.",
+		Flags: flags,
+		Usage: "Deletes an alert at Opsgenie.",
 		Action: func(c *gcli.Context) error {
 			command.DeleteAlertAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -1056,17 +996,17 @@ func heartbeatCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "name",
-			Usage: "Name of the heartbeat on OpsGenie",
+			Usage: "Name of the heartbeat on Opsgenie",
 		},
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "heartbeat",
-		Flags:            flags,
-		Usage:            "Sends heartbeat to OpsGenie",
+		Flags: flags,
+		Usage: "Sends heartbeat to Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.HeartbeatAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -1077,22 +1017,26 @@ func enableCommand() gcli.Command {
 			Usage: "Id of the integration/policy that will be enabled. Either id or name must be provided",
 		},
 		gcli.StringFlag{
-			Name:  "name",
-			Usage: "Name of the integration/policy that will be enabled. Either id or name must be provided",
-		},
-		gcli.StringFlag{
 			Name:  "type",
 			Usage: "integration or policy",
+		},
+		gcli.StringFlag{
+			Name:  "policyType",
+			Usage: "Policy type should be one of alert or notification",
+		},
+		gcli.StringFlag{
+			Name:  "teamId",
+			Usage: "Team Id for policies which are created on a team",
 		},
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "enable",
-		Flags:            flags,
-		Usage:            "Enables OpsGenie Integration and Policy.",
+		Flags: flags,
+		Usage: "Enables Opsgenie Integration and Policy.",
 		Action: func(c *gcli.Context) error {
 			command.EnableAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 
@@ -1100,25 +1044,29 @@ func disableCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "id",
-			Usage: "Id of the integration/policy that will be disabled. Either id or name must be provided",
-		},
-		gcli.StringFlag{
-			Name:  "name",
-			Usage: "Name of the integration/policy that will be disabled. Either id or name must be provided",
+			Usage: "Id of the integration/policy that will be enabled. Either id or name must be provided",
 		},
 		gcli.StringFlag{
 			Name:  "type",
 			Usage: "integration or policy",
 		},
+		gcli.StringFlag{
+			Name:  "policyType",
+			Usage: "Policy type should be one of alert or notification",
+		},
+		gcli.StringFlag{
+			Name:  "teamId",
+			Usage: "Team Id for team policies",
+		},
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "disable",
-		Flags:            flags,
-		Usage:            "Disables OpsGenie Integration and Policy.",
+		Flags: flags,
+		Usage: "Disables Opsgenie Integration and Policy.",
 		Action: func(c *gcli.Context) error {
 			command.DisableAction(c)
 			return nil
-		}, }
+		}}
 	return cmd
 }
 func downloadLogsCommand() gcli.Command {
@@ -1132,18 +1080,18 @@ func downloadLogsCommand() gcli.Command {
 			Usage: "Log files before this date",
 		},
 		gcli.StringFlag{
-			Name:   "path",
-			Usage:  "Directory path, log files will be downloaded under this directory",
+			Name:  "path",
+			Usage: "Directory path, log files will be downloaded under this directory",
 		},
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "downloadLogs",
-		Flags:  flags,
-		Usage:  "Download Logs.",
+		Flags: flags,
+		Usage: "Download Logs.",
 		Action: func(c *gcli.Context) error {
 			command.DownloadLogs(c)
 			return nil
-		},	}
+		}}
 	return cmd
 }
 
@@ -1160,8 +1108,8 @@ func exportUsersCommand() gcli.Command {
 	}
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "exportUsers",
-		Flags:            flags,
-		Usage:            "Exports user list from OpsGenie",
+		Flags: flags,
+		Usage: "Exports user list from Opsgenie",
 		Action: func(c *gcli.Context) error {
 			command.ExportUsersAction(c)
 			return nil
@@ -1180,12 +1128,10 @@ func initCommands(app *gcli.App) {
 		listAttachmentsCommand(),
 		deleteAttachmentCommand(),
 		acknowledgeCommand(),
-		renotifyCommand(),
-		takeOwnershipCommand(),
 		assignOwnerCommand(),
 		addTeamCommand(),
-		addRecipientCommand(),
 		addTagsCommand(),
+		addResponderCommand(),
 		addNoteCommand(),
 		executeActionCommand(),
 		closeAlertCommand(),
@@ -1213,8 +1159,8 @@ func main() {
 	app := gcli.NewApp()
 	app.Name = "lamp"
 	app.Version = lampVersion
-	app.Usage = "Command line interface for OpsGenie"
-	app.Author = "OpsGenie"
+	app.Usage = "Command line interface for Opsgenie"
+	app.Author = "Opsgenie"
 	app.Action = func(c *gcli.Context) error {
 		fmt.Printf("Run 'lamp help' for the options\n")
 		return nil

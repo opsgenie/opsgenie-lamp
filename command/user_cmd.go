@@ -1,32 +1,47 @@
 package command
 
 import (
-	gcli "github.com/codegangsta/cli"
-	"github.com/opsgenie/opsgenie-go-sdk/userv2"
-	"fmt"
-	"os"
-	"log"
 	"bytes"
+	"errors"
+	"fmt"
+	gcli "github.com/codegangsta/cli"
+	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
+	"github.com/opsgenie/opsgenie-go-sdk-v2/user"
+	"os"
 	"strconv"
 	"time"
 )
 
-// ListUsersAction retrieves users from OpsGenie.
+var configurations *client.Config
+
+func NewUserClient(c *gcli.Context) (*user.Client, error) {
+	configurations = getConfigurations(c)
+	userCli, cliErr := user.NewClient(configurations)
+	if cliErr != nil {
+		message := "Can not create the user client. " + cliErr.Error()
+		fmt.Printf("%s\n", message)
+		return nil, errors.New(message)
+	}
+	printVerboseMessage("User Client created.")
+	return userCli, nil
+}
+
+// ListUsersAction retrieves users from Opsgenie.
 func ExportUsersAction(c *gcli.Context) {
 	cli, err := NewUserClient(c)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	printVerboseMessage("List users request prepared from flags, sending request to OpsGenie..")
+	printVerboseMessage("List users request prepared from flags, sending request to Opsgenie..")
 
-	users := []userv2.User{}
-	var offset int = 0
+	var users []user.User
+	var offset = 0
 
 	req := generateListUsersRequest(c)
 	for {
 		req.Offset = offset
-		resp, err := cli.List(req)
+		resp, err := cli.List(nil, &req)
 
 		if err != nil {
 			fmt.Printf("%s\n", err.Error())
@@ -41,70 +56,58 @@ func ExportUsersAction(c *gcli.Context) {
 		}
 	}
 	writeCsv(c, users)
-
 }
 
-func createFile(p string) *os.File{
+func createFile(p string) *os.File {
 	f, err := os.Create(p)
 	if err != nil {
-		log.Fatal("Cannot create file", err)
+		configurations.Logger.Fatal("Cannot create file", err)
 	}
 	return f
 }
 
-func getDestinationPath(c *gcli.Context) string {
-	var destinationPath string = "."
-	val, success := getVal("destinationPath", c)
-
-	if success {
-		destinationPath = val
-	} else {
-		dir, err := os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
-		destinationPath = dir
-	}
-	return destinationPath
-}
-
-func generateListUsersRequest(c *gcli.Context) (userv2.ListUsersRequest) {
-	req := userv2.ListUsersRequest{}
+func generateListUsersRequest(c *gcli.Context) user.ListRequest {
+	req := user.ListRequest{}
 	req.Limit = 100
 
 	if val, success := getVal("query", c); success {
-		req.Query = val;
-		printVerboseMessage("Listing users with given query.")
+		req.Query = val
+		printVerboseMessage("Listing users with given query")
 	}
 
 	return req
 }
 
-func writeCsv(c *gcli.Context, users []userv2.User) {
+func writeCsv(c *gcli.Context, users []user.User) {
 	csv, err := createCsv(users)
 
 	if err != nil {
-		log.Fatal(err)
+		configurations.Logger.Fatal(err)
 	} else {
-		destinationPath := getDestinationPath(c)
-
+		destinationPath := "."
+		if val, success := getVal("destinationPath", c); success {
+			destinationPath = val
+			printVerboseMessage(fmt.Sprintf("Creating report file under: %s", destinationPath))
+		} else {
+			printVerboseMessage("Creating report file into current directory..")
+		}
 		file := createFile(destinationPath + "/result.csv")
 		defer file.Close()
 
 		_, err := file.Write(csv)
 
 		if err != nil {
-			log.Fatal(err)
+			configurations.Logger.Fatal(err)
 		} else {
 			printVerboseMessage("The output file named result.csv has just been created.")
 		}
 	}
 }
 
-func createCsv(users []userv2.User) ([]byte, error){
+func createCsv(users []user.User) ([]byte, error) {
 	var buf bytes.Buffer
-	headers := []string {"id", "blocked", "verified", "username", "fullname", "roleId", "roleName", "timezone",
-							"locale", "country", "state", "city", "line", "zipcode", "createdAt", "mutedUntil"}
+	headers := []string{"id", "blocked", "verified", "username", "fullname", "roleName", "timezone",
+		"locale", "country", "state", "city", "line", "zipcode", "createdAt"}
 
 	writeHeaders(&buf, headers)
 	buf.WriteString("\n")
@@ -117,17 +120,17 @@ func createCsv(users []userv2.User) ([]byte, error){
 	return buf.Bytes(), nil
 }
 
-func writeHeaders(buf *bytes.Buffer, headers []string){
+func writeHeaders(buf *bytes.Buffer, headers []string) {
 	for index, header := range headers {
 		buf.WriteString(header)
-		if index < len(headers) -1 {
+		if index < len(headers)-1 {
 			buf.WriteString(",")
 		}
 	}
 }
 
-func extractFields(buf *bytes.Buffer, user userv2.User){
-	buf.WriteString(user.ID)
+func extractFields(buf *bytes.Buffer, user user.User) {
+	buf.WriteString(user.Id)
 	buf.WriteString(",")
 	buf.WriteString(strconv.FormatBool(user.Blocked))
 	buf.WriteString(",")
@@ -137,9 +140,7 @@ func extractFields(buf *bytes.Buffer, user userv2.User){
 	buf.WriteString(",")
 	buf.WriteString(user.FullName)
 	buf.WriteString(",")
-	buf.WriteString(user.Role.ID)
-	buf.WriteString(",")
-	buf.WriteString(user.Role.Name)
+	buf.WriteString(user.Role.RoleName)
 	buf.WriteString(",")
 	buf.WriteString(user.TimeZone)
 	buf.WriteString(",")
@@ -157,11 +158,4 @@ func extractFields(buf *bytes.Buffer, user userv2.User){
 	buf.WriteString(",")
 	buf.WriteString(user.CreatedAt.Format(time.RFC822))
 	buf.WriteString(",")
-	if !user.MutedUntil.IsZero(){
-		buf.WriteString(user.MutedUntil.Format(time.RFC822))
-	} else {
-	buf.WriteString("")
-	}
 }
-
-
