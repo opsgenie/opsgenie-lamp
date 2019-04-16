@@ -21,7 +21,9 @@ import (
 	"github.com/opsgenie/opsgenie-lamp/cfg"
 	"gopkg.in/yaml.v2"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var verbose = false
@@ -84,57 +86,6 @@ func isEmpty(argName string, arg string, c *gcli.Context) bool {
 	return false
 }
 
-// TODO: comment out for proxy and connection timeout
-/*func proxyConf(host string, port int) (proxy *ogcli.ProxyConfiguration) {
-	printVerboseMessage("Configuring proxy settings with host " + host + " and port " + strconv.Itoa(port))
-	pc := new(ogcli.ProxyConfiguration)
-	pc.Protocol = cfg.Get("proxyProtocol")
-	pc.Host = host
-	pc.Port = port
-	username := cfg.Get("proxyUsername")
-	password := cfg.Get("proxyPassword")
-	if username != "" && password != "" {
-		pc.Username = username
-		pc.Password = password
-	}
-	return pc
-}
-
-func connectionConf() (connCfg *ogcli.HTTPTransportSettings) {
-	printVerboseMessage("Configuring connection settings..")
-	cfg := new(ogcli.HTTPTransportSettings)
-	reqTimeout := parseDuration("requestTimeout")
-	if reqTimeout != 0 {
-		cfg.RequestTimeout = reqTimeout
-	}
-	connTimeout := parseDuration("connectionTimeout")
-	if connTimeout != 0 {
-		cfg.ConnectionTimeout = connTimeout
-	}
-	return cfg
-}
-
-func parseDuration(key string) time.Duration {
-	strDuration := cfg.Get(key)
-	if strDuration != "" {
-		printVerboseMessage("Will try to parse [" + key + "] with value [" + strDuration + "] from string to time duration in seconds..")
-		var reqTimeout time.Duration
-		var err error
-		if strings.HasSuffix(strDuration, "s") {
-			reqTimeout, err = time.ParseDuration(strDuration)
-		} else {
-			reqTimeout, err = time.ParseDuration(strDuration + "s")
-		}
-		if err != nil {
-			printVerboseMessage("Could not parse " + strDuration + " from string to time duration, opsgenie client will use default value.")
-			return 0
-		}
-		return reqTimeout
-	}
-	printVerboseMessage("Could not parse [" + key + "] with value [" + strDuration + "].")
-	return 0
-}*/
-
 func getConfigurations(c *gcli.Context) *client.Config {
 	if c.IsSet("v") {
 		verbose = true
@@ -151,13 +102,49 @@ func getConfigurations(c *gcli.Context) *client.Config {
 		ApiKey:         apiKey,
 		OpsGenieAPIURL: client.ApiUrl(apiURL),
 	}
-	proxyHost := cfg.Get("proxyHost") // TODO missing proxy configurations
-	proxyPort := cfg.Get("proxyPort")
-	if proxyHost != "" {
-		config.ProxyUrl = proxyHost + ":" + proxyPort
+	proxyHost := cfg.Get("proxyHost")
+	var port = 0
+	var err error
+	if cfg.Get("proxyPort") != "" {
+		port, err = strconv.Atoi(cfg.Get("proxyPort"))
+		if err != nil {
+			printVerboseMessage("Invalid proxy port.")
+		}
 	}
-	// TODO add timeout configurations
+
+	if proxyHost != "" {
+		printVerboseMessage("Configuring proxy settings with host " + proxyHost)
+		config.ProxyConfiguration = &client.ProxyConfiguration{
+			Username: cfg.Get("proxyUsername"),
+			Password: cfg.Get("proxyPassword"),
+			Host:     proxyHost,
+			Protocol: proxyProtocol(cfg.Get("proxyProtocol")),
+			Port:     port,
+		}
+	}
+	config.ConfigureLogLevel(cfg.Get("lamp.log.level"))
+	if cfg.Get("requestTimeout") != "" {
+		timeout, err := strconv.Atoi(cfg.Get("requestTimeout"))
+		if err != nil {
+			timeout = 0
+			printVerboseMessage("Invalid requestTimeout value. Will use default requestTimeout value")
+		}
+		if timeout != 0 {
+			config.RequestTimeout = time.Second * time.Duration(timeout)
+		}
+	}
 	return &config
+}
+
+func proxyProtocol(protocol string) client.Protocol {
+	switch protocol {
+	case "http":
+		return client.Http
+	case "socks5":
+		return client.Socks5
+	default:
+		return client.Https
+	}
 }
 
 /*
