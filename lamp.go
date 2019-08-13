@@ -6,7 +6,7 @@ package main
 
 import (
 	"fmt"
-	gcli "github.com/codegangsta/cli"
+	gcli "github.com/urfave/cli"
 	"github.com/opsgenie/opsgenie-lamp/command"
 	"os"
 )
