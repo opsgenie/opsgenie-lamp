@@ -3,9 +3,9 @@ package command
 import (
 	"errors"
 	"fmt"
-	gcli "github.com/codegangsta/cli"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/integration"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/policy"
+	gcli "github.com/urfave/cli"
 	"os"
 )
 

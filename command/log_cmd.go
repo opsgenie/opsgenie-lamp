@@ -3,8 +3,8 @@ package command
 import (
 	"errors"
 	"fmt"
-	gcli "github.com/codegangsta/cli"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/logs"
+	gcli "github.com/urfave/cli"
 	"io"
 	"net/http"
 	"os"
