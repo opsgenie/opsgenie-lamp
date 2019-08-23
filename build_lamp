@@ -1,5 +1,5 @@
 cd $GOPATH/src/github.com/opsgenie/opsgenie-lamp
-go get .
+dep ensure
 
 if [ "`uname`" = "Darwin" ]
 then
