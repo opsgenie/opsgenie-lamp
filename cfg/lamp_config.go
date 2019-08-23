@@ -9,18 +9,13 @@ package cfg
 
 import (
 	"fmt"
+	"github.com/ccding/go-config-reader/config"
 	"os"
 	"path/filepath"
-	"strings"
-
-	"github.com/ccding/go-config-reader/config"
-	"github.com/cihub/seelog"
-	log "github.com/opsgenie/opsgenie-go-sdk/logging"
 )
 
 const (
 	confPath        = "LAMP_CONF_PATH"
-	logDir          = "LAMP_LOGS_DIR"
 	sep      string = string(filepath.Separator)
 )
 
@@ -32,9 +27,6 @@ var Verbose = false
 func printVerboseMessage(message string) {
 	if Verbose {
 		fmt.Printf("%s\n", message)
-	}
-	if log.Logger() != nil {
-		log.Logger().Debug(fmt.Sprintf(message))
 	}
 }
 
@@ -93,39 +85,4 @@ func configureLog() {
 		level = "warn"
 		printVerboseMessage("Could not get log level from configuration, will use default \"warn\".")
 	}
-
-	logDir := os.Getenv(logDir)
-
-	var outPath string
-	logFile := Get("lamp.log.file")
-	if logFile == "" {
-		logFile = "lamp.log"
-		printVerboseMessage("Could not get log filename from configuration. \"lamp.log\" will be used as log filename.")
-	}
-	if logDir != "" {
-		outPath = logDir + sep + logFile
-		printVerboseMessage("Will write logs to: \n" + outPath)
-	} else {
-		outPath = lampHome() + "logs" + sep + logFile
-		printVerboseMessage("LAMP_LOGS_DIR environment variable is not set. Will write logs to: \n" + outPath)
-	}
-
-	logConfig := template(outPath, level)
-	logger, err := seelog.LoggerFromConfigAsBytes([]byte(logConfig))
-	if err != nil {
-		fmt.Printf("Error occured while configuring logger: %s\n", err.Error())
-	}
-	log.UseLogger(logger)
-}
-
-func template(outPath string, level string) string {
-	return `
-<seelog type="sync" minlevel="` + strings.ToLower(level) + `">
-	<outputs formatid="main">
-		<rollingfile formatid="main" type="date" filename="` + outPath + `" datepattern="02-01-2006"/>
-	</outputs>
-	<formats>
-		<format id="main" format="%Date(06/01/02 15:04:05.000) [%Level] %Msg%n"/>
-	</formats>
-</seelog>`
 }
