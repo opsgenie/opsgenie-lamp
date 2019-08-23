@@ -24,7 +24,6 @@
 #   go-tests = true
 #   unused-packages = true
 
-required = ["github.com/konsorten/go-windows-terminal-sequences"]
 
 [[constraint]]
   branch = "master"
