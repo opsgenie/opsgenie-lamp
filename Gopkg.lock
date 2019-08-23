@@ -95,6 +95,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/ccding/go-config-reader/config",
+    "github.com/konsorten/go-windows-terminal-sequences",
     "github.com/opsgenie/opsgenie-go-sdk-v2/alert",
     "github.com/opsgenie/opsgenie-go-sdk-v2/client",
     "github.com/opsgenie/opsgenie-go-sdk-v2/heartbeat",
