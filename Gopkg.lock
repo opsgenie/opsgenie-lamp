@@ -35,7 +35,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:83e5c1ae8c5361333aa3c79ada53c1488516063c9454ab58a275b00d77412cfe"
+  digest = "1:6116aa01b0c87a10ec872369a2b77354b0a39090d1158c8d20ec18fd1b6059fa"
   name = "github.com/opsgenie/opsgenie-go-sdk-v2"
   packages = [
     "alert",
@@ -48,7 +48,7 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "c7fece042d1692174016c2a46722e2c6557ff0d5"
+  revision = "d4ed1a6ec1b3140530679f1b394b50c6f1b3dc31"
 
 [[projects]]
   digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
