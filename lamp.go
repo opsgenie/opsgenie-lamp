@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-const lampVersion string = "3.0.0"
+const lampVersion string = "3.1.0"
 
 var commonFlags = []gcli.Flag{
 	gcli.BoolFlag{

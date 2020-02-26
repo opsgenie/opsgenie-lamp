@@ -58,6 +58,10 @@ func DownloadLogs(c *gcli.Context) {
 			break
 		}
 		req.Marker = getLinksAndDownloadTheFile(response.Logs, endDate, filePath, cli)
+		if req.Marker == "" {
+			printVerboseMessage("Successfully downloaded all the files")
+			break
+		}
 	}
 }
 
@@ -80,6 +84,9 @@ func getLinksAndDownloadTheFile(receivedLogs []logs.Log, endDate string, filePat
 				os.Exit(1)
 			}
 			printVerboseMessage(fmt.Sprintf("Successfully downloaded file: %s", log.FileName))
+		} else {
+			currentFileDate = ""
+			break
 		}
 	}
 	return currentFileDate
