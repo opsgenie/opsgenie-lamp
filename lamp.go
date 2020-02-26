@@ -11,10 +11,10 @@ import (
 	"os"
 )
 
-const lampVersion string = "3.1.0"
+const lampVersion string = "3.1.1"
 
 var commonFlags = []gcli.Flag{
-	gcli.BoolFlag{
+	&gcli.BoolFlag{
 		Name:  "v",
 		Usage: "Execute commands in verbose mode",
 	},
