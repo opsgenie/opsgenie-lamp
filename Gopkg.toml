@@ -24,6 +24,7 @@
 #   go-tests = true
 #   unused-packages = true
 
+ignored = ["github.com/cpuguy83/go-md2man*"]
 
 [[constraint]]
   branch = "master"
@@ -32,10 +33,6 @@
 [[constraint]]
   branch = "master"
   name = "github.com/opsgenie/opsgenie-go-sdk-v2"
-
-[[constraint]]
-  name = "github.com/urfave/cli"
-  version = "1.21.0"
 
 [[constraint]]
   name = "gopkg.in/yaml.v2"
