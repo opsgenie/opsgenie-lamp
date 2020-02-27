@@ -35,7 +35,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6116aa01b0c87a10ec872369a2b77354b0a39090d1158c8d20ec18fd1b6059fa"
+  digest = "1:c57a7a59a578161b290b7818d9d552fb143263767f9f8d685b02fa74b610d671"
   name = "github.com/opsgenie/opsgenie-go-sdk-v2"
   packages = [
     "alert",
@@ -48,7 +48,7 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "d4ed1a6ec1b3140530679f1b394b50c6f1b3dc31"
+  revision = "7ea2314893579e5864d7c4cd4cd9b043a3c823d1"
 
 [[projects]]
   digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
@@ -67,28 +67,28 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:ca4df663ad76879ad38dbd736493679cbb1aa596c6d479fd9fc5e959e5ceb4fb"
+  digest = "1:06fa107b7c12efe111701e98126a03e4794058af0d57e2aca62abbc79e2e25c9"
   name = "github.com/urfave/cli"
   packages = ["."]
   pruneopts = "UT"
-  revision = "e6cf83ec39f6e1158ced1927d4ed14578fda8edb"
-  version = "v1.21.0"
+  revision = "850de854cda08e97afb500b72967f1a56f0330e5"
+  version = "v1.22.2"
 
 [[projects]]
   branch = "master"
-  digest = "1:47844666be86089349a441f5f0ece22f42a87a8cb8c9a31294c593f43209ad19"
+  digest = "1:578046baf093df15df2904bbb0fe06f3f2385bad59987532201007754aa7e1d5"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "fde4db37ae7ad8191b03d30d27f258b5291ae4e3"
+  revision = "d5e6a3e2c0ae16fc7480523ebcb7fd4dd3215489"
 
 [[projects]]
-  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
+  digest = "1:55b110c99c5fdc4f14930747326acce56b52cfce60b24b1c03ef686ac0e46bb1"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
-  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
-  version = "v2.2.2"
+  revision = "53403b58ad1b561927d19068c655246f2db79d48"
+  version = "v2.2.8"
 
 [solve-meta]
   analyzer-name = "dep"
