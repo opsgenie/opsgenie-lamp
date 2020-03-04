@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-lamp/cfg"
-	gcli "github.com/urfave/cli"
+	gcli "github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 	"os"
 	"strconv"

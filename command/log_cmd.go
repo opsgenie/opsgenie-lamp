@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/logs"
-	gcli "github.com/urfave/cli"
+	gcli "github.com/urfave/cli/v2"
 	"io"
 	"net/http"
 	"os"

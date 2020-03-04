@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/integration"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/policy"
-	gcli "github.com/urfave/cli"
+	gcli "github.com/urfave/cli/v2"
 	"os"
 )
 

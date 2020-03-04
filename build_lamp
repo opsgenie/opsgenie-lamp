@@ -1,6 +1,5 @@
 cd $GOPATH/src/github.com/opsgenie/opsgenie-lamp
-dep ensure
-
+go get .
 if [ "`uname`" = "Darwin" ]
 then
   GOOS=darwin GOARCH=amd64 go build

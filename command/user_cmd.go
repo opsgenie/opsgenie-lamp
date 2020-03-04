@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/user"
-	gcli "github.com/urfave/cli"
+	gcli "github.com/urfave/cli/v2"
 	"os"
 	"strconv"
 	"time"
