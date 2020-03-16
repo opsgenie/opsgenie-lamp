@@ -1,5 +1,10 @@
 cd $GOPATH/src/github.com/opsgenie/opsgenie-lamp
+dep ensure
 
-GOOS=darwin GOARCH=amd64 go build -mod=vendor -o opsgenie-lamp-mac
-GOOS=linux GOARCH=386 go build -mod=vendor
-GOOS=windows GOARCH=386 go build -mod=vendor
+if [ "`uname`" = "Darwin" ]
+then
+  GOOS=darwin GOARCH=amd64 go build
+else
+  GOOS=linux GOARCH=386 go build
+fi
+GOOS=windows GOARCH=386 go build
