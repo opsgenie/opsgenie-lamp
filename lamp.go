@@ -1118,6 +1118,530 @@ func exportUsersCommand() gcli.Command {
 	return cmd
 }
 
+func createTeamCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+			Required: true,
+		},
+		gcli.StringFlag{
+			Name:  "desc, d",
+			Usage: "Description",
+		},
+		gcli.StringFlag{
+			Name:  "userName",
+			Usage: "User Name",
+		},
+		gcli.StringFlag{
+			Name:  "userId",
+			Usage: "User Id",
+		},
+		gcli.StringFlag{
+			Name:  "role",
+			Usage: "User Role",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createTeam",
+		Flags: flags,
+		Usage: "Create a team in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.CreateTeamAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listTeamLogsCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "offset, o",
+			Usage: "Logs offset",
+		},
+		gcli.StringFlag{
+			Name:  "limit, l",
+			Usage: "Logs limit",
+		},
+		gcli.StringFlag{
+			Name:  "order",
+			Usage: "Order of logs, asc/desc",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listTeamLogs",
+		Flags: flags,
+		Usage: "List Team logs in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.ListTeamLogsAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateTeamCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "desc, d",
+			Usage: "Description",
+		},
+		gcli.StringFlag{
+			Name:  "userName",
+			Usage: "User Name",
+		},
+		gcli.StringFlag{
+			Name:  "userId",
+			Usage: "User Id",
+		},
+		gcli.StringFlag{
+			Name:  "role",
+			Usage: "User Role",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateTeam",
+		Flags: flags,
+		Usage: "Update a team in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.UpdateTeamAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getTeamCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "id, i",
+			Usage: "Team Id",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getTeam",
+		Flags: flags,
+		Usage: "Get team info in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.GetTeamAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteTeamCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "id, i",
+			Usage: "Team Id",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteTeam",
+		Flags: flags,
+		Usage: "Delete a team in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.DeleteTeamAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listTeamCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listTeams",
+		Flags: flags,
+		Usage: "List all teams in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.ListTeamsAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listRolesCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "id, i",
+			Usage: "Team Id",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "listRoles",
+		Flags: flags,
+		Usage: "List team roles Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.ListRolesAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listTeamRoutingRulesCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "id, i",
+			Usage: "Team Id",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "listRoutingRules",
+		Flags: flags,
+		Usage: "List team routing rules Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.ListTeamRoutingRulesAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteTeamRoutingRulesCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "id, i",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "ruleId",
+			Usage: "Rule Id to deleted",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "deleteRoutingRule",
+		Flags: flags,
+		Usage: "Delete team routing rule in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.DeleteTeamRoutingRuleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+
+func createRoleCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "id, i",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "roleName",
+			Usage: "Role Name",
+			Required: true,
+		},
+		gcli.StringFlag{
+			Name:  "rights",
+			Usage: "Role rights",
+			Required: true,
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "createRole",
+		Flags: flags,
+		Usage: "Create a member role in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.CreateRoleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listAllRoleRightsCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "listRoleRights",
+		Flags: flags,
+		Usage: "Lists all available role rights in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.ListRoleRightsAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getRoleCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "teamName, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "teamId, i",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "roleName",
+			Usage: "Role Name",
+		},
+		gcli.StringFlag{
+			Name:  "roleId",
+			Usage: "Role Id",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "getRole",
+		Flags: flags,
+		Usage: "Get a member role in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.GetTeamRoleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteRoleCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "teamName, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "teamId, i",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "roleName",
+			Usage: "Role Name",
+		},
+		gcli.StringFlag{
+			Name:  "roleId",
+			Usage: "Role Id",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "deleteRole",
+		Flags: flags,
+		Usage: "Delete a member role in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.DeleteTeamRoleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func addMemberCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "teamName, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "teamId, i",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "role",
+			Usage: "Role Name",
+		},
+		gcli.StringFlag{
+			Name:  "userId",
+			Usage: "User Id",
+		},
+		gcli.StringFlag{
+			Name:  "userName",
+			Usage: "Username (email)",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "addMember",
+		Flags: flags,
+		Usage: "Add a member to a team in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.AddMemberAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func removeMemberCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "teamName, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "teamId, i",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "userId",
+			Usage: "User Id",
+		},
+		gcli.StringFlag{
+			Name:  "userName",
+			Usage: "Username (email)",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "removeMember",
+		Flags: flags,
+		Usage: "Remove a member to a team in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.RemoveMemberAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getRoutingRuleCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "teamName, n",
+			Usage: "Team Name",
+		},
+		gcli.StringFlag{
+			Name:  "teamId, i",
+			Usage: "Team Id",
+		},
+		gcli.StringFlag{
+			Name:  "ruleId",
+			Usage: "Rule Id",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty, p",
+			Usage: "For more readable JSON output",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+
+	cmd := gcli.Command{Name: "getRoutingRule",
+		Flags: flags,
+		Usage: "Get a routing rule in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.GetRoutingRuleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command{
 		createAlertCommand(),
@@ -1152,6 +1676,22 @@ func initCommands(app *gcli.App) {
 		escalateToNextActionCommand(),
 		exportUsersCommand(),
 		downloadLogsCommand(),
+		createTeamCommand(),
+		getTeamCommand(),
+		updateTeamCommand(),
+		deleteTeamCommand(),
+		listTeamCommand(),
+		addMemberCommand(),
+		removeMemberCommand(),
+		createRoleCommand(),
+		listAllRoleRightsCommand(),
+		getRoleCommand(),
+		deleteRoleCommand(),
+		listRolesCommand(),
+		listTeamRoutingRulesCommand(),
+		listTeamLogsCommand(),
+		deleteTeamRoutingRulesCommand(),
+		getRoutingRuleCommand(),
 	}
 }
 
@@ -1170,5 +1710,4 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error occured while executing command: %s\n", err.Error())
 	}
-
 }
