@@ -1268,8 +1268,8 @@ func UpdateEscalationCommand() gcli.Command {
 func createTeamCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
-			Name:  "name, n",
-			Usage: "Team Name",
+			Name:     "name, n",
+			Usage:    "Team Name",
 			Required: true,
 		},
 		gcli.StringFlag{
@@ -1549,7 +1549,6 @@ func deleteTeamRoutingRulesCommand() gcli.Command {
 	return cmd
 }
 
-
 func createRoleCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
@@ -1561,13 +1560,13 @@ func createRoleCommand() gcli.Command {
 			Usage: "Team Id",
 		},
 		gcli.StringFlag{
-			Name:  "roleName",
-			Usage: "Role Name",
+			Name:     "roleName",
+			Usage:    "Role Name",
 			Required: true,
 		},
 		gcli.StringFlag{
-			Name:  "rights",
-			Usage: "Role rights",
+			Name:     "rights",
+			Usage:    "Role rights",
 			Required: true,
 		},
 		gcli.BoolFlag{
@@ -1788,6 +1787,526 @@ func getRoutingRuleCommand() gcli.Command {
 	return cmd
 }
 
+func createScheduleCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name, n",
+			Usage: "Name of the schedule to be created",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Description of the schedule to be created",
+		},
+		gcli.StringFlag{
+			Name:  "tz",
+			Usage: "Timezone for the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "team",
+			Usage: "Name of the team under which the schedule is",
+		},
+		gcli.BoolFlag{
+			Name:  "enabled",
+			Usage: "Enable the created schedule",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createSchedule",
+		Flags: flags,
+		Usage: "Creates a schedule on Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.CreateScheduleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getScheduleCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getSchedule",
+		Flags: flags,
+		Usage: "Gets a schedule's content from Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.GetScheduleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateScheduleCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Description of the schedule to be created",
+		},
+		gcli.StringFlag{
+			Name:  "tz",
+			Usage: "Timezone for the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "team",
+			Usage: "Name of the team under which the schedule is",
+		},
+		gcli.BoolFlag{
+			Name:  "enabled",
+			Usage: "Enable the schedule",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateSchedule",
+		Flags: flags,
+		Usage: "Updates a schedule on Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.UpdateScheduleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteScheduleCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteSchedule",
+		Flags: flags,
+		Usage: "Delete a schedule's content from Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.DeleteScheduleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listSchedulesCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.BoolFlag{
+			Name:  "expand",
+			Usage: "Get more detailed response by expanding it",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listSchedules",
+		Flags: flags,
+		Usage: "List schedules in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.ListScheduleAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getScheduleTimelineCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "interval",
+			Usage: "Length of time as integer in intervalUnits",
+		},
+		gcli.StringFlag{
+			Name:  "intervalUnit",
+			Usage: "Unit of the time to retrieve the timeline. Possible values: days, weeks and months",
+		},
+		gcli.StringFlag{
+			Name:  "expand",
+			Usage: "Get a detailed response. Possible values: base, forwarding, override",
+		},
+		gcli.StringFlag{
+			Name:  "date",
+			Usage: "Time (in ISO8601) to return future date on-call participants. Default is now",
+		},
+	}, renderingFlags...)
+
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getScheduleTimeline",
+		Flags: flags,
+		Usage: "Get the timeline of the given schedule",
+		Action: func(c *gcli.Context) error {
+			command.GetScheduleTimelineAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func createScheduleRotationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "startDate",
+			Usage: "Schedule Start Date in ISO8601 format",
+		},
+		gcli.StringFlag{
+			Name:  "endDate",
+			Usage: "Schedule End Date in ISO8601 format",
+		},
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Type of rotation. Available values: daily, weekly and hourly",
+		},
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the rotation",
+		},
+		gcli.StringFlag{
+			Name:  "participants",
+			Usage: "A comma separated list of participants. Example: user:<user-email>, team:<team-name>, none",
+		},
+		gcli.StringFlag{
+			Name:  "length",
+			Usage: "Length of the rotation. Default: 1",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createScheduleRotation",
+		Flags: flags,
+		Usage: "List the rotations for a schedule",
+		Action: func(c *gcli.Context) error {
+			command.CreateScheduleRotationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getScheduleRotationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "rotation-id",
+			Usage: "ID of the rotation",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getScheduleRotation",
+		Flags: flags,
+		Usage: "Get a rotation from the schedule",
+		Action: func(c *gcli.Context) error {
+			command.GetScheduleRotationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listScheduleRotationsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listScheduleRotations",
+		Flags: flags,
+		Usage: "List the rotations for a schedule",
+		Action: func(c *gcli.Context) error {
+			command.ListScheduleRotationsAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateScheduleRotationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "rotation-id",
+			Usage: "ID of the rotation",
+		},
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the rotation",
+		},
+		gcli.StringFlag{
+			Name:  "startDate",
+			Usage: "Schedule Start Date in ISO8601 format",
+		},
+		gcli.StringFlag{
+			Name:  "endDate",
+			Usage: "Schedule End Date in ISO8601 format",
+		},
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Type of rotation. Available values: daily, weekly and hourly",
+		},
+		gcli.StringFlag{
+			Name:  "participants",
+			Usage: "A comma separated list of participants. Example: user:<user-email>, team:<team-name>, none",
+		},
+		gcli.StringFlag{
+			Name:  "length",
+			Usage: "Length of the rotation. Default: 1",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateScheduleRotation",
+		Flags: flags,
+		Usage: "Update a rotation from the schedule",
+		Action: func(c *gcli.Context) error {
+			command.UpdateScheduleRotationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteScheduleRotationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "rotation-id",
+			Usage: "ID of the rotation",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteScheduleRotation",
+		Flags: flags,
+		Usage: "Delete a rotation from the schedule",
+		Action: func(c *gcli.Context) error {
+			command.DeleteScheduleRotationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func createScheduleOverrideCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the schedule override",
+		},
+		gcli.StringFlag{
+			Name:  "startDate",
+			Usage: "Schedule override Start Date in ISO8601 format",
+		},
+		gcli.StringFlag{
+			Name:  "endDate",
+			Usage: "Schedule override End Date in ISO8601 format",
+		},
+		gcli.StringFlag{
+			Name:  "responder",
+			Usage: "Responder type and name. Examples: user:<user-email>, team:<team-name>, escalation:<escalation-name>",
+		},
+		gcli.StringFlag{
+			Name:  "rotations",
+			Usage: "Comma separated list of rotation ids",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createScheduleOverride",
+		Flags: flags,
+		Usage: "Create a schedule override",
+		Action: func(c *gcli.Context) error {
+			command.CreateScheduleOverrideAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listScheduleOverridesCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listScheduleOverrides",
+		Flags: flags,
+		Usage: "List the overrides for a schedule",
+		Action: func(c *gcli.Context) error {
+			command.ListScheduleOverridesAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getScheduleOverrideCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the schedule override",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getScheduleOverride",
+		Flags: flags,
+		Usage: "Get details for a schedule override",
+		Action: func(c *gcli.Context) error {
+			command.GetScheduleOverrideAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateScheduleOverrideCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the schedule override",
+		},
+		gcli.StringFlag{
+			Name:  "startDate",
+			Usage: "Schedule override Start Date in ISO8601 format",
+		},
+		gcli.StringFlag{
+			Name:  "endDate",
+			Usage: "Schedule override End Date in ISO8601 format",
+		},
+		gcli.StringFlag{
+			Name:  "responder",
+			Usage: "Responder type and name. Examples: user:<user-email>, team:<team-name>, escalation:<escalation-name>",
+		},
+		gcli.StringFlag{
+			Name:  "rotations",
+			Usage: "Comma separated list of rotation ids",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateScheduleOverride",
+		Flags: flags,
+		Usage: "Update a schedule override.",
+		Action: func(c *gcli.Context) error {
+			command.UpdateScheduleOverrideAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteScheduleOverrideCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the specified schedule id, which can be id, name. Default value = id",
+		},
+		gcli.StringFlag{
+			Name:  "alias",
+			Usage: "Alias of the schedule override",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteScheduleOverride",
+		Flags: flags,
+		Usage: "Delete a schedule override.",
+		Action: func(c *gcli.Context) error {
+			command.DeleteScheduleOverrideAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
 
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command{
@@ -1843,6 +2362,22 @@ func initCommands(app *gcli.App) {
 		fetchEscalationCommand(),
 		deleteEscalationCommand(),
 		UpdateEscalationCommand(),
+		createScheduleCommand(),
+		getScheduleCommand(),
+		listSchedulesCommand(),
+		updateScheduleCommand(),
+		deleteScheduleCommand(),
+		getScheduleTimelineCommand(),
+		createScheduleRotationCommand(),
+		getScheduleRotationCommand(),
+		listScheduleRotationsCommand(),
+		updateScheduleRotationCommand(),
+		deleteScheduleRotationCommand(),
+		createScheduleOverrideCommand(),
+		listScheduleOverridesCommand(),
+		getScheduleOverrideCommand(),
+		updateScheduleOverrideCommand(),
+		deleteScheduleOverrideCommand(),
 	}
 }
 
