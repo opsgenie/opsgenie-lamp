@@ -1085,6 +1085,186 @@ func exportUsersCommand() gcli.Command {
 	return cmd
 }
 
+func fetchEscalationCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "To identify whether type of identifier it will send",
+		},
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Unique Identifier for escalation",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getEscalation",
+		Flags: flags,
+		Usage: "get Escalation with identifier",
+		Action: func(c *gcli.Context) error {
+			command.GetEscalationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteEscalationCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "To identify whether type of identifier it will send",
+		},
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Unique Identifier for escalation",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteEscalation",
+		Flags: flags,
+		Usage: "Delete Escalation with identifier",
+		Action: func(c *gcli.Context) error {
+			command.DeleteEscalationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func CreateEscalationCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the escalation which is being created",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Description of the escalation",
+		},
+		gcli.StringFlag{
+			Name:  "escalationCondition",
+			Usage: "Condition of rules which is needed in Escalation",
+		},
+		gcli.StringFlag{
+			Name:  "notifyType",
+			Usage: "Type of group(user,team,schedule) which needs to be notified",
+		},
+		gcli.StringFlag{
+			Name:  "particpantType",
+			Usage: "Participant Type which will be notified",
+		},
+		gcli.StringFlag{
+			Name:  "particpantName",
+			Usage: "Name of participant whose participant type in mentioned in order",
+		},
+		gcli.StringFlag{
+			Name:  "delay",
+			Usage: "Delay in escalation rule after which notify will take place",
+		},
+		gcli.StringFlag{
+			Name:  "teamName",
+			Usage: "Owner Team Name of escalation",
+		},
+		gcli.StringFlag{
+			Name:  "waitInterval",
+			Usage: "Wait Interval in Repeat request for escalation",
+		},
+		gcli.StringFlag{
+			Name:  "count",
+			Usage: "Count in Repeat request before next escalation and Repeat works",
+		},
+		gcli.BoolFlag{
+			Name:  "recipientStatus",
+			Usage: "Flag for recipient status",
+		},
+		gcli.BoolFlag{
+			Name:  "closeAlertAfterAll",
+			Usage: "Check for if escaltion repeats are completed, close alert automatically",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createEscalation",
+		Flags: flags,
+		Usage: "Create Escalation",
+		Action: func(c *gcli.Context) error {
+			command.CreateEscalationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func UpdateEscalationCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the escalation which is being updated",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Description of the escalation",
+		},
+		gcli.StringFlag{
+			Name:  "escalationCondition",
+			Usage: "Condition of rules which is needed in Escalation",
+		},
+		gcli.StringFlag{
+			Name:  "notifyType",
+			Usage: "Type of group(user,team,schedule) which needs to be notified",
+		},
+		gcli.StringFlag{
+			Name:  "particpantType",
+			Usage: "Participant Type which will be notified",
+		},
+		gcli.StringFlag{
+			Name:  "particpantName",
+			Usage: "Name of participant whose participant type in mentioned in order",
+		},
+		gcli.StringFlag{
+			Name:  "delay",
+			Usage: "Delay in escalation rule after which notify will take place",
+		},
+		gcli.StringFlag{
+			Name:  "teamName",
+			Usage: "Owner Team Name of escalation",
+		},
+		gcli.StringFlag{
+			Name:  "waitInterval",
+			Usage: "Wait Interval in Repeat request for escalation",
+		},
+		gcli.StringFlag{
+			Name:  "count",
+			Usage: "Count in Repeat request before next escalation and Repeat works",
+		},
+		gcli.BoolFlag{
+			Name:  "recipientStatus",
+			Usage: "Flag for recipient status",
+		},
+		gcli.BoolFlag{
+			Name:  "closeAlertAfterAll",
+			Usage: "Check for if escalation repeats are completed, close alert automatically",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "To identify whether type of identifier it will send",
+		},
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Unique Identifier for escalation",
+		},
+	}
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateEscalation",
+		Flags: flags,
+		Usage: "Update Escalation",
+		Action: func(c *gcli.Context) error {
+			command.UpdateEscalationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
 func createTeamCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
@@ -1659,6 +1839,10 @@ func initCommands(app *gcli.App) {
 		listTeamLogsCommand(),
 		deleteTeamRoutingRulesCommand(),
 		getRoutingRuleCommand(),
+		CreateEscalationCommand(),
+		fetchEscalationCommand(),
+		deleteEscalationCommand(),
+		UpdateEscalationCommand(),
 	}
 }
 
