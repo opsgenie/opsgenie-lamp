@@ -32,6 +32,18 @@ var commonFlags = []gcli.Flag{
 	},
 }
 
+var renderingFlags = []gcli.Flag{
+	gcli.StringFlag{
+		Name:  "output-format",
+		Value: "json",
+		Usage: "Prints the output in json or yaml formats",
+	},
+	gcli.BoolFlag{
+		Name:  "pretty",
+		Usage: "For more readable JSON output",
+	},
+}
+
 func createAlertCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
@@ -104,7 +116,7 @@ func createAlertCommand() gcli.Command {
 }
 
 func getAlertCommand() gcli.Command {
-	commandFlags := []gcli.Flag{
+	commandFlags := append([]gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
@@ -113,16 +125,7 @@ func getAlertCommand() gcli.Command {
 			Name:  "identifier",
 			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
-		gcli.StringFlag{
-			Name:  "output-format",
-			Value: "json",
-			Usage: "Prints the output in json or yaml formats",
-		},
-		gcli.BoolFlag{
-			Name:  "pretty",
-			Usage: "For more readable JSON output",
-		},
-	}
+	}, renderingFlags...)
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "getAlert",
 		Flags: flags,
@@ -136,7 +139,7 @@ func getAlertCommand() gcli.Command {
 }
 
 func listAlertsCommand() gcli.Command {
-	commandFlags := []gcli.Flag{
+	commandFlags := append([]gcli.Flag{
 		gcli.StringFlag{
 			Name:  "query",
 			Usage: "Search query to apply while filtering the alerts",
@@ -166,16 +169,7 @@ func listAlertsCommand() gcli.Command {
 			Usage: "Identifier type of the value at searchIdentifier, which can be id or name. Default value is id." +
 				" If searchIdentifier is not provided, this value is ignored.",
 		},
-		gcli.StringFlag{
-			Name:  "output-format",
-			Value: "json",
-			Usage: "Prints the output in json or yaml formats",
-		},
-		gcli.BoolFlag{
-			Name:  "pretty",
-			Usage: "For more readable JSON output",
-		},
-	}
+	}, renderingFlags...)
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlerts",
 		Flags: flags,
@@ -212,7 +206,7 @@ func countAlertsCommand() gcli.Command {
 }
 
 func listAlertNotesCommand() gcli.Command {
-	commandFlags := []gcli.Flag{
+	commandFlags := append([]gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
@@ -237,16 +231,7 @@ func listAlertNotesCommand() gcli.Command {
 			Name:  "direction",
 			Usage: "Page direction to apply for the given offset. Possible values are next and prev. Default value is `next`",
 		},
-		gcli.StringFlag{
-			Name:  "output-format",
-			Value: "json",
-			Usage: "Prints the output in json or yaml formats",
-		},
-		gcli.BoolFlag{
-			Name:  "pretty",
-			Usage: "For more readable JSON output",
-		},
-	}
+	}, renderingFlags...)
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertNotes",
 		Flags: flags,
@@ -260,7 +245,7 @@ func listAlertNotesCommand() gcli.Command {
 }
 
 func listAlertLogsCommand() gcli.Command {
-	commandFlags := []gcli.Flag{
+	commandFlags := append([]gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
@@ -285,16 +270,7 @@ func listAlertLogsCommand() gcli.Command {
 			Name:  "direction",
 			Usage: "Page direction to apply for the given offset. Possible values are next and prev. Default value is next.",
 		},
-		gcli.StringFlag{
-			Name:  "output-format",
-			Value: "json",
-			Usage: "Prints the output in json or yaml formats",
-		},
-		gcli.BoolFlag{
-			Name:  "pretty",
-			Usage: "For more readable JSON output",
-		},
-	}
+	}, renderingFlags...)
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertLogs",
 		Flags: flags,
@@ -308,7 +284,7 @@ func listAlertLogsCommand() gcli.Command {
 }
 
 func listAlertRecipientsCommand() gcli.Command {
-	commandFlags := []gcli.Flag{
+	commandFlags := append([]gcli.Flag{
 		gcli.StringFlag{
 			Name:  "alertId, id",
 			Usage: "Id of the alert that will be retrieved. Either id or alias must be provided",
@@ -317,16 +293,7 @@ func listAlertRecipientsCommand() gcli.Command {
 			Name:  "identifier",
 			Usage: "Identifier type of the specified id, which can be id, tiny or alias. Default value = id",
 		},
-		gcli.StringFlag{
-			Name:  "output-format",
-			Value: "json",
-			Usage: "Prints the output in json or yaml formats",
-		},
-		gcli.BoolFlag{
-			Name:  "pretty",
-			Usage: "For more readable JSON output",
-		},
-	}
+	}, renderingFlags...)
 	flags := append(commonFlags, commandFlags...)
 	cmd := gcli.Command{Name: "listAlertRecipients",
 		Flags: flags,
