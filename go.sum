@@ -15,6 +15,8 @@ github.com/konsorten/go-windows-terminal-sequences v1.0.2 h1:DB17ag19krx9CFsz4o3
 github.com/konsorten/go-windows-terminal-sequences v1.0.2/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/opsgenie/opsgenie-go-sdk-v2 v1.0.5 h1:AnS8ZCC5dle8P4X4FZ+IOlX9v0jAkCMiZDIzRnYwBbs=
 github.com/opsgenie/opsgenie-go-sdk-v2 v1.0.5/go.mod h1:f0ezb0R/mrB9Hpm5RrIS6EX3ydjsR2nAB88nYYXZcNY=
+github.com/opsgenie/opsgenie-go-sdk-v2 v1.1.1 h1:0y6RTB5SNcf0lhdVyJFPU/bTagUlToKpW4AGWMB7ZBw=
+github.com/opsgenie/opsgenie-go-sdk-v2 v1.1.1/go.mod h1:VOkJ7STzYj+nXRhMcBTcmt8uZZ17KZKJdZtJpgHLbT8=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
