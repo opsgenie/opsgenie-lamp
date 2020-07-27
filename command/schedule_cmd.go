@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
@@ -641,6 +642,67 @@ func DeleteScheduleOverrideAction(c *gcli.Context) {
 
 	renderResponse(c, resp, err)
 }
+
+func GetOnCallsAction(c *gcli.Context){
+	cli := NewScheduleClient(c)
+	req := &schedule.GetOnCallsRequest{}
+	if scheduleName, ok := getVal("name",c); ok {
+		req.ScheduleIdentifierType = schedule.Name
+		req.ScheduleIdentifier = scheduleName
+	} else if scheduleID, ok := getVal("id",c);ok {
+		req.ScheduleIdentifierType = schedule.Id
+		req.ScheduleIdentifier = scheduleID
+	}
+	if atTime, ok := getVal("atTime", c); ok {
+		t, err := time.Parse(time.RFC3339, atTime)
+		exitOnErr(err)
+		req.Date = &t
+	}
+	flat := c.IsSet("flat")
+	req.Flat = &flat
+
+	resp, err := cli.GetOnCalls(context.Background(), req)
+	renderResponse(c, resp, err)
+}
+
+func GetNextOnCallAction(c *gcli.Context){
+	cli := NewScheduleClient(c)
+	req := &schedule.GetNextOnCallsRequest{}
+	if scheduleName, ok := getVal("name",c); ok {
+		req.ScheduleIdentifierType = schedule.Name
+		req.ScheduleIdentifier = scheduleName
+	} else if scheduleID, ok := getVal("id",c);ok {
+		req.ScheduleIdentifierType = schedule.Id
+		req.ScheduleIdentifier = scheduleID
+	}
+	if atTime, ok := getVal("atTime", c); ok {
+		t, err := time.Parse(time.RFC3339, atTime)
+		exitOnErr(err)
+		req.Date = &t
+	}
+	flat := c.IsSet("flat")
+	req.Flat = &flat
+
+	resp, err := cli.GetNextOnCall(context.Background(), req)
+	renderResponse(c, resp, err)
+}
+
+func ExportOnCallsAction(c *gcli.Context){
+	cli := NewScheduleClient(c)
+	req := &schedule.ExportOnCallUserRequest{}
+	if userName, ok := getVal("userName",c); ok {
+		req.UserIdentifier = userName
+	} else if userID, ok := getVal("userId",c);ok {
+		req.UserIdentifier = userID
+	}
+	if exportTo, ok := getVal("exportTo",c);ok {
+		req.ExportedFilePath = exportTo
+	}
+	icsFile, err := cli.ExportOnCallUser(context.Background(), req)
+	exitOnErr(err)
+	fmt.Println("Downloaded file ", icsFile.Name())
+}
+
 
 func exitOnErr(err error) {
 	if err != nil {

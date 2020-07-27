@@ -2308,6 +2308,94 @@ func deleteScheduleOverrideCommand() gcli.Command {
 	return cmd
 }
 
+func getOnCallsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the schedule",
+		},
+		gcli.BoolFlag{
+			Name: "flat, f",
+			Usage: "If the response should be flat",
+		},
+		gcli.StringFlag{
+			Name: "atTime",
+			Usage: "Time at which to be checked, default is current time",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getOncall",
+		Flags: flags,
+		Usage: "Get On-Calls ",
+		Action: func(c *gcli.Context) error {
+			command.GetOnCallsAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getNextOnCallCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the schedule",
+		},
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the schedule",
+		},
+		gcli.BoolFlag{
+			Name: "flat, f",
+			Usage: "If the response should be flat",
+		},
+		gcli.StringFlag{
+			Name: "atTime",
+			Usage: "Time at which to be checked, default is current time",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getNextOncall",
+		Flags: flags,
+		Usage: "Get next On-Call",
+		Action: func(c *gcli.Context) error {
+			command.GetNextOnCallAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+func exportUserOnCallsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "userId",
+			Usage: "ID of the user",
+		},
+		gcli.StringFlag{
+			Name:  "userName",
+			Usage: "username(email) of the user",
+		},
+		gcli.StringFlag{
+			Name:  "exportTo",
+			Usage: "file destination to export to",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "exportUserOncalls",
+		Flags: flags,
+		Usage: "Export User Oncalls as ics file",
+		Action: func(c *gcli.Context) error {
+			command.ExportOnCallsAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command{
 		createAlertCommand(),
@@ -2378,6 +2466,9 @@ func initCommands(app *gcli.App) {
 		getScheduleOverrideCommand(),
 		updateScheduleOverrideCommand(),
 		deleteScheduleOverrideCommand(),
+		getOnCallsCommand(),
+		getNextOnCallCommand(),
+		exportUserOnCallsCommand(),
 	}
 }
 
