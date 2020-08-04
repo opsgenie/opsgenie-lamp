@@ -11,6 +11,7 @@ github.com/opsgenie/opsgenie-go-sdk-v2/alert
 github.com/opsgenie/opsgenie-go-sdk-v2/client
 github.com/opsgenie/opsgenie-go-sdk-v2/escalation
 github.com/opsgenie/opsgenie-go-sdk-v2/heartbeat
+github.com/opsgenie/opsgenie-go-sdk-v2/incident
 github.com/opsgenie/opsgenie-go-sdk-v2/integration
 github.com/opsgenie/opsgenie-go-sdk-v2/logs
 github.com/opsgenie/opsgenie-go-sdk-v2/og

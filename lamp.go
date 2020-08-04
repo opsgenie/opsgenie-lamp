@@ -2396,6 +2396,452 @@ func exportUserOnCallsCommand() gcli.Command {
 	return cmd
 }
 
+func createIncidentCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "message",
+			Usage: "Message of the incident which is being created",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Description of the incident which is being created",
+		},
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Comma seperated list of responder types",
+		},
+		gcli.StringFlag{
+			Name:  "responder",
+			Usage: "Comma seperated list of responder name/value applicable as per type specified",
+		},
+		gcli.StringFlag{
+			Name:  "tags",
+			Usage: "Comma seperated list of tags which will be added to the incident",
+		},
+		gcli.StringFlag{
+			Name:  "detailKeys",
+			Usage: "Details of incident are stored in Key/value pair. Key of details which needs to be added",
+		},
+		gcli.StringFlag{
+			Name:  "detailValues",
+			Usage: "Value for each key specified in details key in same order",
+		},
+		gcli.StringFlag{
+			Name:  "priority",
+			Usage: "Priority of the incident",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Note which needs to be added to incident",
+		},
+		gcli.StringFlag{
+			Name:  "serviceId",
+			Usage: "Service Id for the incident",
+		},
+		gcli.BoolFlag{
+			Name:  "notifyStakeHolders",
+			Usage: "Bool flag to show if stakeholders needs to be notified",
+		},
+		gcli.StringFlag{
+			Name:  "statusPageEntityTitle",
+			Usage: "Title of Status Page Entity",
+		},
+		gcli.StringFlag{
+			Name:  "statusPageEntityDescription",
+			Usage: "Description of Status Page Entity",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createIncident",
+		Flags: flags,
+		Usage: "Create Incident in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.CreateIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteIncidentCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident which need to be deleted",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteIncident",
+		Flags: flags,
+		Usage: "Deletes incident in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.DeleteIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getIncidentCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident whose information we want",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getIncident",
+		Flags: flags,
+		Usage: "Fetches incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.GetIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getIncidentListCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "limit",
+			Usage: "Number of incidents required in first list",
+		},
+		gcli.StringFlag{
+			Name:  "sortField",
+			Usage: "Parameter according to which list needs to sorted",
+		},
+		gcli.StringFlag{
+			Name:  "offset",
+			Usage: "Offset for list of incidents in case of Pagination",
+		},
+		gcli.StringFlag{
+			Name:  "order",
+			Usage: "Order by which incident needs to be sorted {asc/desc}",
+		},
+		gcli.StringFlag{
+			Name:  "query",
+			Usage: "Query to be executed for finding list of incidents",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getIncidentList",
+		Flags: flags,
+		Usage: "List all incident in Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.ListIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func closeIncidentCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident which need to be closed",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Note in the incident before closing it",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "closeIncident",
+		Flags: flags,
+		Usage: "Closes incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.CloseIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func addNoteIncidentCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident which note need to be added",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Note to be added to the incident",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "addNoteToIncident",
+		Flags: flags,
+		Usage: "Add Notes to incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.AddNoteIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func addResponderIncidentCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident which responders need to be added",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Note to be added to the incident",
+		},
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Comma seperated list of responder types",
+		},
+		gcli.StringFlag{
+			Name:  "responder",
+			Usage: "Comma seperated list of responder name/value applicable as per type specified",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "addIncidentResponders",
+		Flags: flags,
+		Usage: "Add Responders to incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.AddResponderIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func addIncidentTagsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident which tags need to be added",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Note to be added to the incident",
+		},
+		gcli.StringFlag{
+			Name:  "tags",
+			Usage: "Comma seperated Tags to be added to the incident",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "addIncidentTags",
+		Flags: flags,
+		Usage: "Add Tags to incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.AddTagsIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func removeIncidentTagsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident whose tags need to be deleted",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Note to be added to the incident",
+		},
+		gcli.StringFlag{
+			Name:  "tags",
+			Usage: "Comma seperated Tags to be removed to the incident",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "removeIncidentTags",
+		Flags: flags,
+		Usage: "Remove Tags to incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.RemoveTagsIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func addIncidentDetailsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident which details need to be added",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Note to be added to the incident",
+		},
+		gcli.StringFlag{
+			Name:  "detailKeys",
+			Usage: "Details are stored in Key/Value Pair. Comma seperated Keys in details to be added to the incident",
+		},
+		gcli.StringFlag{
+			Name:  "detailValues",
+			Usage: "Comma seperated Values corresponding to keys in details to be added to the incident",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "addIncidentDetails",
+		Flags: flags,
+		Usage: "Add Details to incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.AddDetailsIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func removeIncidentDetailsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident which details need to be removed",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "note",
+			Usage: "Note to be added to the incident",
+		},
+		gcli.StringFlag{
+			Name:  "keys",
+			Usage: "Comma seperated detail Keys to be removed to the incident",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "removeIncidentDetails",
+		Flags: flags,
+		Usage: "Remove Tags to incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.RemoveDetailsIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateIncidentPriorityCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident whose priority needs to be updated",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "priority",
+			Usage: "Updated Priority of the incident",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateIncidentPriority",
+		Flags: flags,
+		Usage: "Update Priority of incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.UpdatePriorityIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateIncidentMessageCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident whose message needs to be added",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "message",
+			Usage: "Updated Message of the incident",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateIncidentMessage",
+		Flags: flags,
+		Usage: "Updated Message of incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.UpdateMessageIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateIncidentDescriptionCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "identifier",
+			Usage: "Identifier of the incident whose decription needs to be added",
+		},
+		gcli.StringFlag{
+			Name:  "identifierType",
+			Usage: "Identifier type of the incident {id,tiny}",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Updated Description of the incident",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateIncidentDescription",
+		Flags: flags,
+		Usage: "Updated Description of incident in Opsgenie with Id",
+		Action: func(c *gcli.Context) error {
+			command.UpdateDescriptionIncidentAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command{
 		createAlertCommand(),
@@ -2469,6 +2915,20 @@ func initCommands(app *gcli.App) {
 		getOnCallsCommand(),
 		getNextOnCallCommand(),
 		exportUserOnCallsCommand(),
+		createIncidentCommand(),
+		deleteIncidentCommand(),
+		getIncidentCommand(),
+		getIncidentListCommand(),
+		closeIncidentCommand(),
+		addNoteIncidentCommand(),
+		addResponderIncidentCommand(),
+		addIncidentTagsCommand(),
+		removeIncidentTagsCommand(),
+		addIncidentDetailsCommand(),
+		removeIncidentDetailsCommand(),
+		updateIncidentPriorityCommand(),
+		updateIncidentMessageCommand(),
+		updateIncidentDescriptionCommand(),
 	}
 }
 
