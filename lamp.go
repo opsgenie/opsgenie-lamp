@@ -2842,6 +2842,125 @@ func updateIncidentDescriptionCommand() gcli.Command {
 	return cmd
 }
 
+func createServiceCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the new Service",
+		},
+		gcli.StringFlag{
+			Name:  "teamId",
+			Usage: "ID of the team",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Service Description",
+		},
+		gcli.StringFlag{
+			Name:  "visibility",
+			Usage: "Service Visibility",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createService",
+		Flags: flags,
+		Usage: "Create a new service",
+		Action: func(c *gcli.Context) error {
+			command.CreateServiceAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+func updateServiceCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the service",
+		},
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the service",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "service Description",
+		},
+		gcli.StringFlag{
+			Name:  "visibility",
+			Usage: "Service Visibility",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateService",
+		Flags: flags,
+		Usage: "Update a service",
+		Action: func(c *gcli.Context) error {
+			command.UpdateServiceAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+func deleteServiceCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the  service",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteService",
+		Flags: flags,
+		Usage: "Deletes service from Opsgenie",
+		Action: func(c *gcli.Context) error {
+			command.DeleteServiceAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+func getServiceCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "ID of the service",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getService",
+		Flags: flags,
+		Usage: "Get service details",
+		Action: func(c *gcli.Context) error {
+			command.GetServiceAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+func listServiceCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "limit",
+			Usage: "Number of results per page",
+		},
+		gcli.StringFlag{
+			Name:  "offset",
+			Usage: "Pagination offset",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listServices",
+		Flags: flags,
+		Usage: "List the registered services",
+		Action: func(c *gcli.Context) error {
+			command.ListServiceAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command{
 		createAlertCommand(),
@@ -2929,6 +3048,12 @@ func initCommands(app *gcli.App) {
 		updateIncidentPriorityCommand(),
 		updateIncidentMessageCommand(),
 		updateIncidentDescriptionCommand(),
+		createServiceCommand(),
+		updateServiceCommand(),
+		deleteServiceCommand(),
+		getServiceCommand(),
+		listServiceCommand(),
+
 	}
 }
 
