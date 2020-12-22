@@ -2,7 +2,6 @@ package command
 
 import (
 	"errors"
-	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/alert"
 	gcli "github.com/urfave/cli"
 	"io"
@@ -17,10 +16,10 @@ func NewAlertClient(c *gcli.Context) (*alert.Client, error) {
 	alertCli, cliErr := alert.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the alert client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(ERROR,message)
 		return nil, errors.New(message)
 	}
-	printVerboseMessage("Alert Client created.")
+	printMessage(DEBUG,"Alert Client created.")
 	return alertCli, nil
 }
 
@@ -73,15 +72,15 @@ func CreateAlertAction(c *gcli.Context) {
 		req.Details = extractDetailsFromCommand(c)
 	}
 
-	printVerboseMessage("Create alert request prepared from flags, sending request to Opsgenie...")
+	printMessage(DEBUG,"Create alert request prepared from flags, sending request to Opsgenie...")
 
 	resp, err := cli.Create(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Alert will be created.")
-	fmt.Printf("requestId=%s\n", resp.RequestId)
+	printMessage(DEBUG,"Alert will be created.")
+	printMessage(INFO, resp.RequestId)
 }
 
 func generateResponders(c *gcli.Context, responderType alert.ResponderType, parameter string) []alert.Responder {
@@ -111,7 +110,7 @@ func extractDetailsFromCommand(c *gcli.Context) map[string]string {
 			p := strings.Split(prop, "=")
 			details[p[0]] = strings.Join(p[1:], "=")
 		} else {
-			fmt.Printf("Dynamic parameters should have the value of the form a=b, but got: %s\n", prop)
+			printMessage(ERROR, "Dynamic parameters should have the value of the form a=b, but got: " + prop + "\n")
 			gcli.ShowCommandHelp(c, c.Command.Name)
 			os.Exit(1)
 		}
@@ -133,32 +132,32 @@ func GetAlertAction(c *gcli.Context) {
 	}
 	req.IdentifierType = grabIdentifierType(c)
 
-	printVerboseMessage("Get alert request prepared from flags, sending request to Opsgenie...")
+	printMessage(DEBUG,"Get alert request prepared from flags, sending request to Opsgenie...")
 
 	resp, err := cli.Get(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
 	outputFormat := strings.ToLower(c.String("output-format"))
-	printVerboseMessage("Got Alert successfully, and will print as " + outputFormat)
+	printMessage(DEBUG,"Got Alert successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
 		output, err := resultToYAML(resp)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	default:
 		isPretty := c.IsSet("pretty")
 		output, err := resultToJSON(resp, isPretty)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	}
 }
 
@@ -187,16 +186,16 @@ func AttachFileAction(c *gcli.Context) {
 
 	req.User = grabUsername(c)
 
-	printVerboseMessage("Attach request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Attach request prepared from flags, sending request to Opsgenie..")
 
 	response, err := cli.CreateAlertAttachments(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("File attached to alert successfully.")
-	fmt.Printf("Result: %s\n", response.Result)
+	printMessage(DEBUG,"File attached to alert successfully.")
+	printMessage(INFO, "Result : " + response.Result + "\n")
 }
 
 // GetAttachmentAction retrieves a download link to specified alert attachment
@@ -218,17 +217,16 @@ func GetAttachmentAction(c *gcli.Context) {
 		req.AttachmentId = val
 	}
 
-	printVerboseMessage("Get alert attachment request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Get alert attachment request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.GetAlertAttachment(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Got Alert Attachment successfully, and will print download link.")
-	fmt.Println("Download Link: ")
-	fmt.Printf("%s\n", resp.Url)
+	printMessage(DEBUG,"Got Alert Attachment successfully, and will print download link.")
+	printMessage(INFO, "Download Link: " + resp.Url)
 }
 
 // DownloadAttachmentAction downloads the attachment specified with attachmentId for given alert
@@ -255,11 +253,11 @@ func DownloadAttachmentAction(c *gcli.Context) {
 		destinationPath = val
 	}
 
-	printVerboseMessage("Download alert attachment request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Download alert attachment request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.GetAlertAttachment(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
@@ -275,14 +273,14 @@ func DownloadAttachmentAction(c *gcli.Context) {
 	}
 
 	if err != nil {
-		fmt.Println("Error while creating", fileName, "-", err)
+		printMessage(ERROR, "Error while creating " + fileName + "-" + err.Error())
 		return
 	}
 	defer output.Close()
 
 	response, err := http.Get(downloadLink)
 	if err != nil {
-		fmt.Println("Error while downloading", fileName, "-", err)
+		printMessage(ERROR, "Error while downloading " + fileName + "-" + err.Error())
 		return
 	}
 	defer response.Body.Close()
@@ -290,7 +288,7 @@ func DownloadAttachmentAction(c *gcli.Context) {
 	_, err = io.Copy(output, response.Body)
 
 	if err != nil {
-		fmt.Println("Error while downloading", fileName, "-", err)
+		printMessage(ERROR,"Error while downloading " + fileName + " - " + err.Error())
 		return
 	}
 }
@@ -310,34 +308,34 @@ func ListAlertAttachmentsAction(c *gcli.Context) {
 	}
 	req.IdentifierType = grabIdentifierType(c)
 
-	printVerboseMessage("List alert attachments request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"List alert attachments request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.ListAlertsAttachments(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
 	outputFormat := strings.ToLower(c.String("output-format"))
-	printVerboseMessage("List Alert Attachment successfully, and will print as " + outputFormat)
+	printMessage(DEBUG,"List Alert Attachment successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
 		output, err := resultToYAML(resp.Attachment)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	default:
 		isPretty := c.IsSet("pretty")
 		output, err := resultToJSON(resp.Attachment, isPretty)
 
 		if err != nil {
-			fmt.Println(err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
 
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	}
 }
 
@@ -359,17 +357,17 @@ func DeleteAlertAttachmentAction(c *gcli.Context) {
 		req.AttachmentId = val
 	}
 
-	printVerboseMessage("Delete alert attachment request prepared from flags, sending request to OpsGenie..")
+	printMessage(DEBUG,"Delete alert attachment request prepared from flags, sending request to OpsGenie..")
 
 	resp, err := cli.DeleteAlertAttachment(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Alert attachment will be deleted. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
-	fmt.Println("Result: " + resp.Result)
+	printMessage(DEBUG,"Alert attachment will be deleted. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
+	printMessage(INFO,"Result: " + resp.Result)
 }
 
 // AcknowledgeAction acknowledges an alert at Opsgenie.
@@ -394,16 +392,16 @@ func AcknowledgeAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Acknowledge alert request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Acknowledge alert request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.Acknowledge(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Acknowledge request will be processed. RequestID " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Acknowledge request will be processed. RequestID " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // AssignOwnerAction assigns the specified user as the owner of the alert at Opsgenie.
@@ -431,16 +429,16 @@ func AssignOwnerAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Assign ownership request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Assign ownership request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.AssignAlert(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Ownership assignment request will be processed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Ownership assignment request will be processed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // AddTeamAction adds a team to an alert at Opsgenie.
@@ -467,15 +465,15 @@ func AddTeamAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Add team request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Add team request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.AddTeam(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Add team request will be processed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Add team request will be processed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // AddResponderAction adds responder to an alert at Opsgenie.
@@ -508,15 +506,15 @@ func AddResponderAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Add responder request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Add responder request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.AddResponder(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Add responder request will be processed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Add responder request will be processed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // AddTagsAction adds tags to an alert at Opsgenie.
@@ -543,15 +541,15 @@ func AddTagsAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Add tag request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Add tag request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.AddTags(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Add tags request will be processed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Add tags request will be processed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // AddNoteAction adds a note to an alert at Opsgenie.
@@ -576,15 +574,15 @@ func AddNoteAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Add note request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Add note request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.AddNote(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Add note request will be processed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Add note request will be processed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // ExecuteActionAction executes a custom action on an alert at Opsgenie.
@@ -612,15 +610,15 @@ func ExecuteActionAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Execute action request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Execute action request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.ExecuteCustomAction(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Execute custom action request will be processed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Execute custom action request will be processed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // CloseAlertAction closes an alert at Opsgenie.
@@ -643,15 +641,15 @@ func CloseAlertAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Close alert request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Close alert request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.Close(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Alert will be closed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Alert will be closed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // DeleteAlertAction deletes an alert at Opsgenie.
@@ -670,16 +668,16 @@ func DeleteAlertAction(c *gcli.Context) {
 		req.Source = val
 	}
 
-	printVerboseMessage("Delete alert request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Delete alert request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.Delete(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Alert will be deleted. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Alert will be deleted. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // ListAlertsAction retrieves alert details from Opsgenie.
@@ -691,32 +689,32 @@ func ListAlertsAction(c *gcli.Context) {
 
 	req := generateListAlertRequest(c)
 
-	printVerboseMessage("List alerts request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"List alerts request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.List(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
 	outputFormat := strings.ToLower(c.String("output-format"))
-	printVerboseMessage("Got Alerts successfully, and will print as " + outputFormat)
+	printMessage(DEBUG,"Got Alerts successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
 		output, err := resultToYAML(resp.Alerts)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	default:
 		isPretty := c.IsSet("pretty")
 		output, err := resultToJSON(resp.Alerts, isPretty)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO,output)
 	}
 }
 
@@ -832,14 +830,14 @@ func CountAlertsAction(c *gcli.Context) {
 	}
 	req := generateListAlertRequest(c)
 
-	printVerboseMessage("Count alerts request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Count alerts request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.List(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	fmt.Printf("%d\n", len(resp.Alerts))
+	printMessage(INFO, string(len(resp.Alerts)))
 }
 
 // ListAlertNotesAction retrieves specified alert notes from Opsgenie.
@@ -876,32 +874,32 @@ func ListAlertNotesAction(c *gcli.Context) {
 		req.Offset = val
 	}
 
-	printVerboseMessage("List alert notes request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"List alert notes request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.ListAlertNotes(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
 	outputFormat := strings.ToLower(c.String("output-format"))
-	printVerboseMessage("Alert notes listed successfully, and will print as " + outputFormat)
+	printMessage(DEBUG,"Alert notes listed successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
 		output, err := resultToYAML(resp.AlertLog)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	default:
 		isPretty := c.IsSet("pretty")
 		output, err := resultToJSON(resp.AlertLog, isPretty)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	}
 }
 
@@ -938,32 +936,32 @@ func ListAlertLogsAction(c *gcli.Context) {
 		req.Offset = val
 	}
 
-	printVerboseMessage("List alert notes request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"List alert notes request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.ListAlertLogs(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
 	outputFormat := strings.ToLower(c.String("output-format"))
-	printVerboseMessage("Alert notes listed successfully, and will print as " + outputFormat)
+	printMessage(DEBUG,"Alert notes listed successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
 		output, err := resultToYAML(resp.AlertLog)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	default:
 		isPretty := c.IsSet("pretty")
 		output, err := resultToJSON(resp.AlertLog, isPretty)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	}
 }
 
@@ -980,32 +978,32 @@ func ListAlertRecipientsAction(c *gcli.Context) {
 	}
 	req.IdentifierType = grabIdentifierType(c)
 
-	printVerboseMessage("List alert recipients request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"List alert recipients request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.ListAlertRecipients(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
 	outputFormat := strings.ToLower(c.String("output-format"))
-	printVerboseMessage("Alert recipients listed successfully, and will print as " + outputFormat)
+	printMessage(DEBUG,"Alert recipients listed successfully, and will print as " + outputFormat)
 	switch outputFormat {
 	case "yaml":
 		output, err := resultToYAML(resp.AlertRecipients)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	default:
 		isPretty := c.IsSet("pretty")
 		output, err := resultToJSON(resp.AlertRecipients, isPretty)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	}
 }
 
@@ -1030,16 +1028,16 @@ func UnAcknowledgeAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("UnAcknowledge alert request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"UnAcknowledge alert request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.Unacknowledge(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Alert will be unAcknowledged. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Alert will be unAcknowledged. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 // SnoozeAction snoozes an alert at Opsgenie.
@@ -1068,21 +1066,21 @@ func SnoozeAction(c *gcli.Context) {
 		endTime, err := time.Parse(time.RFC3339, val)
 
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
 
 		req.EndTime = endTime
 	}
-	printVerboseMessage("Snooze request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Snooze request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.Snooze(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("will be snoozed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"will be snoozed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // RemoveTagsAction removes tags from an alert at Opsgenie.
@@ -1110,15 +1108,15 @@ func RemoveTagsAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Remove tags request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Remove tags request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.RemoveTags(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Tags will be removed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Tags will be removed. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 // AddDetailsAction adds details to an alert at Opsgenie.
@@ -1145,15 +1143,15 @@ func AddDetailsAction(c *gcli.Context) {
 	if c.IsSet("D") {
 		req.Details = extractDetailsFromCommand(c)
 	}
-	printVerboseMessage("Add details request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Add details request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.AddDetails(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Details will be added. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Details will be added. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // RemoveDetailsAction removes details from an alert at Opsgenie.
@@ -1181,15 +1179,15 @@ func RemoveDetailsAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Remove details request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Remove details request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.RemoveDetails(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Details will be removed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Details will be removed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // EscalateToNextAction processes the next available rule in the specified escalation.
@@ -1220,15 +1218,15 @@ func EscalateToNextAction(c *gcli.Context) {
 		req.Note = val
 	}
 
-	printVerboseMessage("Escalate to next request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Escalate to next request prepared from flags, sending request to Opsgenie..")
 
 	resp, err := cli.EscalateToNext(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Escalated to next request will be processed. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Escalated to next request will be processed. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 func grabIdentifierType(c *gcli.Context) alert.AlertIdentifier {

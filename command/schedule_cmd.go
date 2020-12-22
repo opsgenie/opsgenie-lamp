@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	gcli "github.com/urfave/cli"
@@ -16,10 +15,10 @@ func NewScheduleClient(c *gcli.Context) *schedule.Client {
 	scheduleCli, cliErr := schedule.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the schedule client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(INFO, message)
 		os.Exit(1)
 	}
-	printVerboseMessage("Schedule Client created.")
+	printMessage(DEBUG,"Schedule Client created.")
 
 	return scheduleCli
 }
@@ -46,7 +45,7 @@ func CreateScheduleAction(c *gcli.Context) {
 		}
 	}
 
-	printVerboseMessage("Create schedule request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Create schedule request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.Create(nil, &req)
 	renderResponse(c, resp, err)
@@ -66,7 +65,7 @@ func GetScheduleAction(c *gcli.Context) {
 		req.IdentifierValue = id
 	}
 
-	printVerboseMessage("Get schedule request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Get schedule request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.Get(nil, &req)
 
@@ -78,7 +77,7 @@ func ListScheduleAction(c *gcli.Context) {
 	req := schedule.ListRequest{}
 	expand := c.IsSet("expand")
 	req.Expand = &expand
-	printVerboseMessage("List schedules request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"List schedules request prepared, sending request to Opsgenie..")
 	resp, err := cli.List(nil, &req)
 	renderResponse(c, resp, err)
 }
@@ -115,7 +114,7 @@ func UpdateScheduleAction(c *gcli.Context) {
 		}
 	}
 
-	printVerboseMessage("Update schedule request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Update schedule request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.Update(nil, &req)
 
@@ -136,7 +135,7 @@ func DeleteScheduleAction(c *gcli.Context) {
 		req.IdentifierValue = id
 	}
 
-	printVerboseMessage("Delete schedule request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Delete schedule request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.Delete(nil, &req)
 
@@ -193,7 +192,7 @@ func GetScheduleTimelineAction(c *gcli.Context) {
 		req.Date = &date
 	}
 
-	printVerboseMessage("Get schedule timeline request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Get schedule timeline request prepared, sending request to Opsgenie..")
 	resp, err := cli.GetTimeline(nil, &req)
 
 	renderResponse(c, resp, err)
@@ -277,7 +276,7 @@ func CreateScheduleRotationAction(c *gcli.Context) {
 
 	req.Rotation = &rotation
 
-	printVerboseMessage("Create schedule rotations request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Create schedule rotations request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.CreateRotation(nil, &req)
 
@@ -302,7 +301,7 @@ func GetScheduleRotationAction(c *gcli.Context) {
 		req.RotationId = rotationId
 	}
 
-	printVerboseMessage("Get schedule rotation request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Get schedule rotation request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.GetRotation(nil, &req)
 
@@ -323,7 +322,7 @@ func ListScheduleRotationsAction(c *gcli.Context) {
 		req.ScheduleIdentifierValue = id
 	}
 
-	printVerboseMessage("List schedule rotations request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"List schedule rotations request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.ListRotations(nil, &req)
 
@@ -411,7 +410,7 @@ func UpdateScheduleRotationAction(c *gcli.Context) {
 	}
 
 	req.Rotation = &rotation
-	printVerboseMessage("Update schedule rotation request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Update schedule rotation request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.UpdateRotation(nil, &req)
 
@@ -436,7 +435,7 @@ func DeleteScheduleRotationAction(c *gcli.Context) {
 		req.RotationId = rotationId
 	}
 
-	printVerboseMessage("Delete schedule rotation request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Delete schedule rotation request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.DeleteRotation(nil, &req)
 
@@ -501,7 +500,7 @@ func CreateScheduleOverrideAction(c *gcli.Context) {
 		}
 		req.Rotations = rotations
 	}
-	printVerboseMessage("Create schedule override request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Create schedule override request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.CreateScheduleOverride(nil, &req)
 
@@ -522,7 +521,7 @@ func ListScheduleOverridesAction(c *gcli.Context) {
 		req.ScheduleIdentifier = id
 	}
 
-	printVerboseMessage("List schedule overrides request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"List schedule overrides request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.ListScheduleOverride(nil, &req)
 
@@ -546,7 +545,7 @@ func GetScheduleOverrideAction(c *gcli.Context) {
 	if overrideAlias, ok := getVal("alias", c); ok {
 		req.Alias = overrideAlias
 	}
-	printVerboseMessage("Get schedule override request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Get schedule override request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.GetScheduleOverride(nil, &req)
 
@@ -612,7 +611,7 @@ func UpdateScheduleOverrideAction(c *gcli.Context) {
 		req.Rotations = rotations
 	}
 
-	printVerboseMessage("Update schedule override request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Update schedule override request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.UpdateScheduleOverride(nil, &req)
 
@@ -636,7 +635,7 @@ func DeleteScheduleOverrideAction(c *gcli.Context) {
 	if overrideAlias, ok := getVal("alias", c); ok {
 		req.Alias = overrideAlias
 	}
-	printVerboseMessage("Delete schedule override request prepared, sending request to Opsgenie..")
+	printMessage(DEBUG,"Delete schedule override request prepared, sending request to Opsgenie..")
 
 	resp, err := cli.DeleteScheduleOverride(nil, &req)
 
@@ -700,13 +699,13 @@ func ExportOnCallsAction(c *gcli.Context){
 	}
 	icsFile, err := cli.ExportOnCallUser(context.Background(), req)
 	exitOnErr(err)
-	fmt.Println("Downloaded file ", icsFile.Name())
+	printMessage(INFO,"Downloaded file "+ icsFile.Name())
 }
 
 
 func exitOnErr(err error) {
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 }
@@ -715,17 +714,17 @@ func renderResponse(c *gcli.Context, resp interface{}, err error) {
 	exitOnErr(err)
 
 	outputFormat := strings.ToLower(c.String("output-format"))
-	printVerboseMessage("Got response successfully, rendering in " + outputFormat + " format")
+	printMessage(DEBUG,"Got response successfully, rendering in " + outputFormat + " format")
 
 	switch outputFormat {
 	case "yaml":
 		output, err := resultToYAML(resp)
 		exitOnErr(err)
-		fmt.Printf("%s\n", output)
+		printMessage(INFO,output)
 	default:
 		isPretty := c.IsSet("pretty")
 		output, err := resultToJSON(resp, isPretty)
 		exitOnErr(err)
-		fmt.Printf("%s\n", output)
+		printMessage(INFO, output)
 	}
 }

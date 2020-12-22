@@ -2,7 +2,6 @@ package command
 
 import (
 	"errors"
-	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/integration"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/policy"
 	gcli "github.com/urfave/cli"
@@ -13,10 +12,10 @@ func NewIntegrationClient(c *gcli.Context) (*integration.Client, error) {
 	integrationCli, cliErr := integration.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the integration client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(ERROR, message)
 		return nil, errors.New(message)
 	}
-	printVerboseMessage("Integration Client created.")
+	printMessage(DEBUG,"Integration Client created.")
 	return integrationCli, nil
 }
 
@@ -24,10 +23,10 @@ func NewPolicyClient(c *gcli.Context) (*policy.Client, error) {
 	policyCli, cliErr := policy.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the policy client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(ERROR, message)
 		return nil, errors.New(message)
 	}
-	printVerboseMessage("Policy Client created.")
+	printMessage(DEBUG,"Policy Client created.")
 	return policyCli, nil
 }
 
@@ -51,13 +50,13 @@ func EnableAction(c *gcli.Context) {
 		if val, success := getVal("policyType", c); success {
 			req.Type = policy.PolicyType(val)
 		}
-		printVerboseMessage("Enable policy request prepared from flags, sending request to Opsgenie..")
+		printMessage(DEBUG,"Enable policy request prepared from flags, sending request to Opsgenie..")
 		_, err = cli.EnablePolicy(nil, &req)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR, err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("Policy enabled successfuly\n")
+		printMessage(INFO,"Policy enabled successfuly")
 
 	case "integration":
 		cli, err := NewIntegrationClient(c)
@@ -69,15 +68,15 @@ func EnableAction(c *gcli.Context) {
 		if val, success := getVal("id", c); success {
 			req.Id = val
 		}
-		printVerboseMessage("Enable integration request prepared from flags, sending request to Opsgenie..")
+		printMessage(DEBUG,"Enable integration request prepared from flags, sending request to Opsgenie..")
 		_, err = cli.Enable(nil, &req)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR, err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("Integration enabled successfuly\n")
+		printMessage(INFO,"Integration enabled successfuly")
 	default:
-		fmt.Printf("Invalid type option %s, specify either integration or policy\n", val)
+		printMessage(INFO,"Invalid type option " + val + ", specify either integration or policy")
 		gcli.ShowCommandHelp(c, "enable")
 		os.Exit(1)
 	}
@@ -103,13 +102,13 @@ func DisableAction(c *gcli.Context) {
 		if val, success := getVal("policyType", c); success {
 			req.Type = policy.PolicyType(val)
 		}
-		printVerboseMessage("Disable policy request prepared from flags, sending request to Opsgenie..")
+		printMessage(DEBUG,"Disable policy request prepared from flags, sending request to Opsgenie..")
 		_, err = cli.DisablePolicy(nil, &req)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR, err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("Policy disabled successfuly\n")
+		printMessage(INFO, "Policy disabled successfuly")
 
 	case "integration":
 		cli, err := NewIntegrationClient(c)
@@ -121,15 +120,15 @@ func DisableAction(c *gcli.Context) {
 		if val, success := getVal("id", c); success {
 			req.Id = val
 		}
-		printVerboseMessage("Disable integration request prepared from flags, sending request to Opsgenie..")
+		printMessage(DEBUG,"Disable integration request prepared from flags, sending request to Opsgenie..")
 		_, err = cli.Disable(nil, &req)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("Integration disabled successfuly\n")
+		printMessage(INFO,"Integration disabled successfuly")
 	default:
-		fmt.Printf("Invalid type option %s, specify either integration or policy\n", val)
+		printMessage(ERROR,"Invalid type option " + val + ", specify either integration or policy")
 		gcli.ShowCommandHelp(c, "disable")
 		os.Exit(1)
 	}

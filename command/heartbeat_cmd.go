@@ -2,7 +2,6 @@ package command
 
 import (
 	"errors"
-	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/heartbeat"
 	gcli "github.com/urfave/cli"
 	"os"
@@ -12,10 +11,10 @@ func NewHeartbeatClient(c *gcli.Context) (*heartbeat.Client, error) {
 	heartbeatCli, cliErr := heartbeat.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the heartbeat client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(INFO, message)
 		return nil, errors.New(message)
 	}
-	printVerboseMessage("Heartbeat Client created.")
+	printMessage(DEBUG,"Heartbeat Client created.")
 	return heartbeatCli, nil
 }
 
@@ -31,12 +30,12 @@ func HeartbeatAction(c *gcli.Context) {
 		name = val
 	}
 
-	printVerboseMessage("Heartbeat request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"Heartbeat request prepared from flags, sending request to Opsgenie..")
 
 	response, err := cli.Ping(nil, name)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	printVerboseMessage("Ping request has received. RequestID: " + response.RequestId)
+	printMessage(DEBUG,"Ping request has received. RequestID: " + response.RequestId)
 }
