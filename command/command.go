@@ -20,6 +20,7 @@ import (
 	"github.com/opsgenie/opsgenie-lamp/cfg"
 	gcli "github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -28,13 +29,43 @@ import (
 
 var verbose = false
 
-func printVerboseMessage(message string) {
-	if verbose {
-		fmt.Println(message)
+var logFilePath  = ""
+
+type LogLevel string
+
+const (
+	INFO LogLevel = "INFO"
+	ERROR LogLevel = "ERROR"
+	DEBUG LogLevel = "DEBUG"
+)
+
+func printMessage(logLevel LogLevel, message string) {
+	if logLevel == DEBUG {
+		if verbose {
+			log.Println(string(logLevel) + " : " + message)
+			logToFile(DEBUG, message)
+		}
+		logger := client.Config{}.Logger
+		if logger != nil {
+			logger.Debug(message)
+		}
+	} else {
+		log.Println(string(logLevel) + " : " + message)
+		logToFile(logLevel, message)
 	}
-	logger := client.Config{}.Logger
-	if logger != nil {
-		logger.Debug(message)
+}
+
+func logToFile(logLevel LogLevel, message string) {
+	if logFilePath != "" {
+		file, fileError := os.OpenFile(grabLogPath(),
+			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if fileError != nil {
+			log.Println(fileError)
+		}
+
+		defer file.Close()
+		logger := log.New(file, string(logLevel+" : "), log.LstdFlags)
+		logger.Println(message)
 	}
 }
 
@@ -47,8 +78,17 @@ func grabAPIKey(c *gcli.Context) string {
 		return val
 	}
 	apiKey := cfg.Get("apiKey")
-	printVerboseMessage("apiKey flag is not set in the command, reading apiKey from config..")
+	printMessage(DEBUG,"apiKey flag is not set in the command, reading apiKey from config..")
 	return apiKey
+}
+
+func grabLogPath() string {
+	logPath := cfg.Get("logPath")
+	date := time.Now().Format("2006-01-02")
+	if logPath != "" {
+		return logPath +  "/" + date + "-Lamp.log"
+	}
+	return ""
 }
 
 func grabUsername(c *gcli.Context) string {
@@ -89,7 +129,7 @@ func isEmpty(argName string, arg string, c *gcli.Context) bool {
 func getConfigurations(c *gcli.Context) *client.Config {
 	if c.IsSet("v") {
 		verbose = true
-		printVerboseMessage("Will execute command in verbose mode.")
+		printMessage(DEBUG,"Will execute command in verbose mode.")
 	}
 
 	readConfigFile(c)
@@ -97,6 +137,10 @@ func getConfigurations(c *gcli.Context) *client.Config {
 	apiURL := cfg.Get("apiUrl")
 	if apiURL == "" {
 		apiURL = string(client.API_URL)
+	}
+	logFilePath = grabLogPath()
+	if logFilePath == "" {
+		log.Println(string(INFO) + ": Logging to file is disabled, To enable Logging to file Please specify logPath in configuration")
 	}
 	config := client.Config{
 		ApiKey:         apiKey,
@@ -108,12 +152,12 @@ func getConfigurations(c *gcli.Context) *client.Config {
 	if cfg.Get("proxyPort") != "" {
 		port, err = strconv.Atoi(cfg.Get("proxyPort"))
 		if err != nil {
-			printVerboseMessage("Invalid proxy port.")
+			printMessage(DEBUG,"Invalid proxy port.")
 		}
 	}
 
 	if proxyHost != "" {
-		printVerboseMessage("Configuring proxy settings with host " + proxyHost)
+		printMessage(DEBUG,"Configuring proxy settings with host " + proxyHost)
 		config.ProxyConfiguration = &client.ProxyConfiguration{
 			Username: cfg.Get("proxyUsername"),
 			Password: cfg.Get("proxyPassword"),
@@ -127,7 +171,7 @@ func getConfigurations(c *gcli.Context) *client.Config {
 		timeout, err := strconv.Atoi(cfg.Get("requestTimeout"))
 		if err != nil {
 			timeout = 0
-			printVerboseMessage("Invalid requestTimeout value. Will use default requestTimeout value")
+			printMessage(DEBUG,"Invalid requestTimeout value. Will use default requestTimeout value")
 		}
 		if timeout != 0 {
 			config.RequestTimeout = time.Second * time.Duration(timeout)

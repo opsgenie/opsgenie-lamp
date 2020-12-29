@@ -2,7 +2,6 @@ package command
 
 import (
 	"errors"
-	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/incident"
 	gcli "github.com/urfave/cli"
 	"os"
@@ -14,10 +13,10 @@ func NewIncidentClient(c *gcli.Context) (*incident.Client, error) {
 	incidentcli, cliErr := incident.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the incident client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(INFO, message)
 		return nil, errors.New(message)
 	}
-	printVerboseMessage("Incident Client created.")
+	printMessage(DEBUG,"Incident Client created.")
 	return incidentcli, nil
 }
 
@@ -60,16 +59,16 @@ func CreateIncidentAction(c *gcli.Context) {
 
 	req.NotifyStakeholders = &notifyStakeHolders
 
-	printVerboseMessage("Create Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Create Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Create(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Creating Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Creating Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func DeleteIncidentAction(c *gcli.Context) {
@@ -86,16 +85,16 @@ func DeleteIncidentAction(c *gcli.Context) {
 
 	req.Identifier = grabIncidentIdentifierType(c)
 
-	printVerboseMessage("Delete Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Delete Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Delete(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Deleting Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Deleting Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 func GetIncidentAction(c *gcli.Context) {
@@ -112,21 +111,21 @@ func GetIncidentAction(c *gcli.Context) {
 
 	req.Identifier = grabIncidentIdentifierType(c)
 
-	printVerboseMessage("Get Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Get Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Get(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Fetching Incident. RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Fetching Incident. RequestID: " + resp.RequestId)
 	output, err := resultToJSON(resp, true)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("Incident : " + output)
+	printMessage(INFO,"Incident : " + output)
 }
 
 func ListIncidentAction(c *gcli.Context) {
@@ -153,21 +152,21 @@ func ListIncidentAction(c *gcli.Context) {
 		req.Query =  val
 	}
 
-	printVerboseMessage("List Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"List Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.List(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Fetching List of Incident. RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Fetching List of Incident. RequestID: " + resp.RequestId)
 	output, err := resultToJSON(resp, true)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("Incident List : " + output)
+	printMessage(INFO,"Incident List : " + output)
 
 }
 
@@ -189,16 +188,16 @@ func CloseIncidentAction(c *gcli.Context) {
 		req.Note =  val
 	}
 
-	printVerboseMessage("Close Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Close Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Close(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Cosing Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Cosing Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 func AddNoteIncidentAction(c *gcli.Context) {
@@ -220,16 +219,16 @@ func AddNoteIncidentAction(c *gcli.Context) {
 		req.Note =  val
 	}
 
-	printVerboseMessage("Add Note to Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Add Note to Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.AddNote(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Adding Note to Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Adding Note to Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 func AddResponderIncidentAction(c *gcli.Context) {
@@ -253,16 +252,16 @@ func AddResponderIncidentAction(c *gcli.Context) {
 
 	req.Responders = grabIncidentResponders(c)
 
-	printVerboseMessage("Add Responder to Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Add Responder to Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.AddResponder(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Adding Responder to Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Adding Responder to Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 
 }
 
@@ -291,16 +290,16 @@ func AddTagsIncidentAction(c *gcli.Context) {
 	}
 
 
-	printVerboseMessage("Add Tags to Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Add Tags to Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.AddTags(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Adding Tags to Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Adding Tags to Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func RemoveTagsIncidentAction(c *gcli.Context) {
@@ -326,16 +325,16 @@ func RemoveTagsIncidentAction(c *gcli.Context) {
 		req.Tags =  strings.Split(val, ",")
 	}
 
-	printVerboseMessage("Remove Tags from Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Remove Tags from Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.RemoveTags(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Removing Tags from Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Removing Tags from Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func AddDetailsIncidentAction(c *gcli.Context) {
@@ -359,16 +358,16 @@ func AddDetailsIncidentAction(c *gcli.Context) {
 
 	req.Details = grabIncidentDetails(c)
 
-	printVerboseMessage("Add Details to Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Add Details to Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.AddDetails(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Adding details to Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Adding details to Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func RemoveDetailsIncidentAction(c *gcli.Context) {
@@ -393,16 +392,16 @@ func RemoveDetailsIncidentAction(c *gcli.Context) {
 		req.Keys =  strings.Split(val, ",")
 	}
 
-	printVerboseMessage("Remove Details from Incident Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Remove Details from Incident Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.RemoveDetails(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Removing Details from Incident. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Removing Details from Incident. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func UpdatePriorityIncidentAction(c *gcli.Context) {
@@ -421,16 +420,16 @@ func UpdatePriorityIncidentAction(c *gcli.Context) {
 
 	req.Priority =  grabIncidentPriority(c)
 
-	printVerboseMessage("Update Incident Priority Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Update Incident Priority Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.UpdatePriority(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Incident Priority is being updated. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Incident Priority is being updated. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func UpdateMessageIncidentAction(c *gcli.Context) {
@@ -451,16 +450,16 @@ func UpdateMessageIncidentAction(c *gcli.Context) {
 		req.Message =  val
 	}
 
-	printVerboseMessage("Update Incident Message Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Update Incident Message Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.UpdateMessage(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Incident message is being updated. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Incident message is being updated. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func UpdateDescriptionIncidentAction(c *gcli.Context) {
@@ -481,16 +480,16 @@ func UpdateDescriptionIncidentAction(c *gcli.Context) {
 		req.Description =  val
 	}
 
-	printVerboseMessage("Update Incident Description Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Update Incident Description Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.UpdateDescription(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Incident Description is being updated. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Incident Description is being updated. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func grabIncidentIdentifierType(c *gcli.Context) incident.IdentifierType {
@@ -542,7 +541,7 @@ func grabIncidentResponders(c *gcli.Context) []incident.Responder {
 	}
 
 	if len(responderTypes) != len(responderIdentifiers) {
-		fmt.Println("type and responders should have equal values")
+		printMessage(ERROR,"type and responders should have equal values")
 		os.Exit(1)
 	}
 
@@ -596,7 +595,7 @@ func grabIncidentDetails(c *gcli.Context) map[string]string {
 	}
 
 	if len(detailKeys) != len(detailValues) {
-		fmt.Println("detailKeys and detailValues should have equal values")
+		printMessage(ERROR,"detailKeys and detailValues should have equal values")
 		os.Exit(1)
 	}
 
@@ -622,7 +621,7 @@ func grabIncidentPriority(c *gcli.Context) incident.Priority {
 		}
 	}
 
-	fmt.Println("Please add correct Priority")
+	printMessage(ERROR,"Please add correct Priority")
 	os.Exit(1)
 	return incident.P3
 }

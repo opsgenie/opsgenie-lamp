@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/team"
 	gcli "github.com/urfave/cli"
 	"os"
@@ -15,10 +14,10 @@ func NewTeamClient(c *gcli.Context) *team.Client {
 	teamCli, cliErr := team.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the team client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(INFO,message)
 		os.Exit(1)
 	}
-	printVerboseMessage("Team Client created.")
+	printMessage(DEBUG,"Team Client created.")
 	return teamCli
 }
 
@@ -528,8 +527,8 @@ func printResponse(resp interface{},err error, c *gcli.Context) {
 	isPretty := c.IsSet("pretty")
 	output, err := resultToJSON(resp, isPretty)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
-	fmt.Println(output)
+	printMessage(INFO,output)
 }

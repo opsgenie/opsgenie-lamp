@@ -1,7 +1,6 @@
 package command
 
 import (
-	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/service"
 	gcli "github.com/urfave/cli"
 	"os"
@@ -12,10 +11,10 @@ func NewServiceClient(c *gcli.Context) (*service.Client){
 	serviceCli, cliErr := service.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the Service client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(INFO, message)
 		os.Exit(1)
 	}
-	printVerboseMessage("Service Client created.")
+	printMessage(DEBUG,"Service Client created.")
 	return serviceCli
 }
 
@@ -40,13 +39,13 @@ func CreateServiceAction(c *gcli.Context) {
 		req.Description = val
 	}
 
-	printVerboseMessage("Create Service Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Create Service Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Create(nil, &req)
 	exitOnErr(err)
 
-	printVerboseMessage("Creating Service. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Creating Service. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // UpdateServiceAction updates a service in OpsGenie
@@ -70,13 +69,13 @@ func UpdateServiceAction(c *gcli.Context) {
 		req.Visibility = service.Visibility(val)
 	}
 
-	printVerboseMessage("Update Service Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Update Service Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Update(nil, &req)
 	exitOnErr(err)
 
-	printVerboseMessage("Updating Service. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Updating Service. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // DeleteServiceAction updates a service in OpsGenie
@@ -88,13 +87,13 @@ func DeleteServiceAction(c *gcli.Context) {
 		req.Id = val
 	}
 
-	printVerboseMessage("Delete Service Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Delete Service Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Delete(nil, &req)
 	exitOnErr(err)
 
-	printVerboseMessage("Deleting Service. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Deleting Service. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // GetServiceAction updates a service in OpsGenie
@@ -106,7 +105,7 @@ func GetServiceAction(c *gcli.Context) {
 		req.Id = val
 	}
 
-	printVerboseMessage("Get Service Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Get Service Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Get(nil, &req)
 	renderResponse(c, resp, err)
@@ -133,7 +132,7 @@ func ListServiceAction(c *gcli.Context) {
 		req.Offset = offset
 	}
 
-	printVerboseMessage("Get Service List Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Get Service List Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.List(nil, &req)
 	renderResponse(c, resp, err)

@@ -16,10 +16,10 @@ func NewCustomerLogClient(c *gcli.Context) (*logs.Client, error) {
 	logsCli, cliErr := logs.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the logs client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(INFO, message)
 		return nil, errors.New(message)
 	}
-	printVerboseMessage("Logs Client created.")
+	printMessage(DEBUG,"Logs Client created.")
 	return logsCli, nil
 }
 
@@ -37,29 +37,29 @@ func DownloadLogs(c *gcli.Context) {
 	filePath := "."
 	if val, success := getVal("path", c); success {
 		filePath = val
-		printVerboseMessage(fmt.Sprintf("Downloading log files under: %s", filePath))
+		printMessage(DEBUG,fmt.Sprintf("Downloading log files under: %s", filePath))
 	} else {
-		printVerboseMessage("Downloading log files into current directory..")
+		printMessage(DEBUG,"Downloading log files into current directory..")
 	}
 
 	endDate := ""
 	if val, success := getVal("end", c); success {
 		endDate = val
 	}
-	printVerboseMessage("List Downloadable Logs request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"List Downloadable Logs request prepared from flags, sending request to Opsgenie..")
 	for {
 		response, err := cli.ListLogFiles(nil, &req)
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR, err.Error())
 			os.Exit(1)
 		}
 		if response.Marker == "" {
-			printVerboseMessage("Successfully downloaded all the files")
+			printMessage(DEBUG,"Successfully downloaded all the files")
 			break
 		}
 		req.Marker = getLinksAndDownloadTheFile(response.Logs, endDate, filePath, cli)
 		if req.Marker == "" {
-			printVerboseMessage("Successfully downloaded all the files")
+			printMessage(DEBUG,"Successfully downloaded all the files")
 			break
 		}
 	}
@@ -73,17 +73,17 @@ func getLinksAndDownloadTheFile(receivedLogs []logs.Log, endDate string, filePat
 		})
 		time.Sleep(time.Duration(500 * time.Millisecond))
 		if err != nil {
-			printVerboseMessage(fmt.Sprintf("Error: %s while downloading log file: %s, but proceding rest of the log files", err.Error(), log.FileName))
+			printMessage(DEBUG,fmt.Sprintf("Error: %s while downloading log file: %s, but proceding rest of the log files", err.Error(), log.FileName))
 			continue
 		}
 		currentFileDate = log.FileName[:len(log.FileName)-5]
 		if endDate == "" || checkDate(endDate, currentFileDate) {
 			err := downloadFile(filePath+fmt.Sprintf("/%s", log.FileName), downloadResponse.LogFileDownloadLink)
 			if err != nil {
-				fmt.Printf("%s\n", err.Error())
+				printMessage(ERROR,err.Error())
 				os.Exit(1)
 			}
-			printVerboseMessage(fmt.Sprintf("Successfully downloaded file: %s", log.FileName))
+			printMessage(DEBUG,fmt.Sprintf("Successfully downloaded file: %s", log.FileName))
 		} else {
 			currentFileDate = ""
 			break

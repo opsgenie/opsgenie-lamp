@@ -2,7 +2,6 @@ package command
 
 import (
 	"errors"
-	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/escalation"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	gcli "github.com/urfave/cli"
@@ -15,10 +14,10 @@ func NewEscalationClient(c *gcli.Context) (*escalation.Client, error) {
 	escalationcli, cliErr := escalation.NewClient(getConfigurations(c))
 	if cliErr != nil {
 		message := "Can not create the escalation client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(INFO, message)
 		return nil, errors.New(message)
 	}
-	printVerboseMessage("Escalation Client created.")
+	printMessage(DEBUG,"Escalation Client created.")
 	return escalationcli, nil
 }
 
@@ -51,16 +50,16 @@ func CreateEscalationAction(c *gcli.Context) {
 
 	req.Repeat = &repeatRequest
 
-	printVerboseMessage("Find Escalation Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Find Escalation Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Create(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Fetching Escaltion. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Fetching Escaltion. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 func generateRuleRequest(c *gcli.Context) []escalation.RuleRequest {
@@ -74,7 +73,7 @@ func generateRuleRequest(c *gcli.Context) []escalation.RuleRequest {
 	delay := grabEscalationDelayRequest(c)
 
 	if !(len(escalationCondition) == len(notifyTypes) && len(participantNames) == len(participantTypes) && len(delay) == len(escalationCondition) && len(delay) == len(participantTypes)) {
-		fmt.Println("escalationCondition, notifyTypes, participantTypes, participantNames, delay should have equal number of values")
+		printMessage(ERROR,"escalationCondition, notifyTypes, participantTypes, participantNames, delay should have equal number of values")
 		os.Exit(1)
 	}
 
@@ -133,16 +132,16 @@ func GetEscalationAction(c *gcli.Context) {
 		req.Identifier = val
 	}
 
-	printVerboseMessage("Find Escalation Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Find Escalation Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Get(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Fetching Escaltion. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Fetching Escaltion. RequestID: " + resp.RequestId)
+	printMessage(INFO, "RequestID: " + resp.RequestId)
 }
 
 // UpdateEscalationAction updates an escalation at Opsgenie.
@@ -181,16 +180,16 @@ func UpdateEscalationAction(c *gcli.Context) {
 		req.Identifier = val
 	}
 
-	printVerboseMessage("Find Escalation Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Find Escalation Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Update(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Fetching Escaltion. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Fetching Escaltion. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 // DeleteEscalationAction deletes an escalation at Opsgenie.
@@ -208,16 +207,16 @@ func DeleteEscalationAction(c *gcli.Context) {
 		req.Identifier = val
 	}
 
-	printVerboseMessage("Delete Escalation Request Created. Sending to Opsgenie...")
+	printMessage(DEBUG,"Delete Escalation Request Created. Sending to Opsgenie...")
 
 	resp, err := cli.Delete(nil, &req)
 	if err != nil {
-		fmt.Printf("%s\n", err.Error())
+		printMessage(ERROR,err.Error())
 		os.Exit(1)
 	}
 
-	printVerboseMessage("Deleting Escaltion. RequestID: " + resp.RequestId)
-	fmt.Println("RequestID: " + resp.RequestId)
+	printMessage(DEBUG,"Deleting Escaltion. RequestID: " + resp.RequestId)
+	printMessage(INFO,"RequestID: " + resp.RequestId)
 }
 
 func grabEscalationIdentifier(c *gcli.Context) escalation.Identifier {

@@ -19,10 +19,10 @@ func NewUserClient(c *gcli.Context) (*user.Client, error) {
 	userCli, cliErr := user.NewClient(configurations)
 	if cliErr != nil {
 		message := "Can not create the user client. " + cliErr.Error()
-		fmt.Printf("%s\n", message)
+		printMessage(INFO,message)
 		return nil, errors.New(message)
 	}
-	printVerboseMessage("User Client created.")
+	printMessage(DEBUG,"User Client created.")
 	return userCli, nil
 }
 
@@ -33,7 +33,7 @@ func ExportUsersAction(c *gcli.Context) {
 		os.Exit(1)
 	}
 
-	printVerboseMessage("List users request prepared from flags, sending request to Opsgenie..")
+	printMessage(DEBUG,"List users request prepared from flags, sending request to Opsgenie..")
 
 	var users []user.User
 	var offset = 0
@@ -44,7 +44,7 @@ func ExportUsersAction(c *gcli.Context) {
 		resp, err := cli.List(nil, &req)
 
 		if err != nil {
-			fmt.Printf("%s\n", err.Error())
+			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
 		users = append(users, resp.Users...)
@@ -72,7 +72,7 @@ func generateListUsersRequest(c *gcli.Context) user.ListRequest {
 
 	if val, success := getVal("query", c); success {
 		req.Query = val
-		printVerboseMessage("Listing users with given query")
+		printMessage(DEBUG,"Listing users with given query")
 	}
 
 	return req
@@ -87,9 +87,9 @@ func writeCsv(c *gcli.Context, users []user.User) {
 		destinationPath := "."
 		if val, success := getVal("destinationPath", c); success {
 			destinationPath = val
-			printVerboseMessage(fmt.Sprintf("Creating report file under: %s", destinationPath))
+			printMessage(DEBUG,fmt.Sprintf("Creating report file under: %s", destinationPath))
 		} else {
-			printVerboseMessage("Creating report file into current directory..")
+			printMessage(DEBUG,"Creating report file into current directory..")
 		}
 		file := createFile(destinationPath + "/result.csv")
 		defer file.Close()
@@ -99,7 +99,7 @@ func writeCsv(c *gcli.Context, users []user.User) {
 		if err != nil {
 			configurations.Logger.Fatal(err)
 		} else {
-			printVerboseMessage("The output file named result.csv has just been created.")
+			printMessage(DEBUG,"The output file named result.csv has just been created.")
 		}
 	}
 }
