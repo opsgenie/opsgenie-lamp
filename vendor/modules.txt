@@ -6,7 +6,7 @@ github.com/hashicorp/go-cleanhttp
 github.com/hashicorp/go-retryablehttp
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.0
+# github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.6
 github.com/opsgenie/opsgenie-go-sdk-v2/alert
 github.com/opsgenie/opsgenie-go-sdk-v2/client
 github.com/opsgenie/opsgenie-go-sdk-v2/escalation
@@ -26,7 +26,8 @@ github.com/pkg/errors
 github.com/sirupsen/logrus
 # github.com/urfave/cli v1.21.0
 github.com/urfave/cli
-# golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
+# golang.org/x/sys v0.0.0-20201119102817-f84b799fce68
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2

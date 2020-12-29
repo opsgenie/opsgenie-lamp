@@ -7,8 +7,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.5.4 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.0
+	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.6
 	github.com/urfave/cli v1.21.0
-	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
 	gopkg.in/yaml.v2 v2.2.2
 )
