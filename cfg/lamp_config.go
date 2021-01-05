@@ -54,7 +54,8 @@ func LoadConfiguration() {
 	}
 
 	if _, err := os.Stat(confPath); os.IsNotExist(err) {
-		confPath = lampHome() + "conf" + sep + "lamp.conf"
+		userHomeDir, _ := os.UserHomeDir()
+		confPath = userHomeDir + sep + ".config" + sep + "lamp.conf"
 		printVerboseMessage("Could not find the file specified. Will try to read config from: \n" + confPath)
 	}
 	load(confPath)
