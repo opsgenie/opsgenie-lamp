@@ -32,6 +32,7 @@ func DownloadLogs(c *gcli.Context) {
 	req := logs.ListLogFilesRequest{}
 	if val, success := getVal("start", c); success {
 		req.Marker = val
+		req.Limit = 1000
 	}
 
 	filePath := "."
