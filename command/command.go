@@ -234,3 +234,8 @@ func readConfigFile(c *gcli.Context) {
 		cfg.LoadConfiguration()
 	}
 }
+
+func getListLogsCommandDefaultSize() int{
+	return cfg.GetlistLogCommandDefaultBucketSize()
+}
+
