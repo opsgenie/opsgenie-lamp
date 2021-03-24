@@ -42,6 +42,8 @@ func DownloadLogs(c *gcli.Context) {
 		printMessage(DEBUG,"Downloading log files into current directory..")
 	}
 
+	req.Limit = getListLogsCommandDefaultSize()
+
 	endDate := ""
 	if val, success := getVal("end", c); success {
 		endDate = val
