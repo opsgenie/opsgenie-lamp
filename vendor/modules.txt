@@ -6,7 +6,7 @@ github.com/hashicorp/go-cleanhttp
 github.com/hashicorp/go-retryablehttp
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.6
+# github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.8
 github.com/opsgenie/opsgenie-go-sdk-v2/alert
 github.com/opsgenie/opsgenie-go-sdk-v2/client
 github.com/opsgenie/opsgenie-go-sdk-v2/escalation

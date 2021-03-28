@@ -959,7 +959,7 @@ func deleteAlertCommand() gcli.Command {
 	return cmd
 }
 
-func heartbeatCommand() gcli.Command {
+func pingHeartbeatCommand() gcli.Command {
 	commandFlags := []gcli.Flag{
 		gcli.StringFlag{
 			Name:  "name",
@@ -967,11 +967,131 @@ func heartbeatCommand() gcli.Command {
 		},
 	}
 	flags := append(commonFlags, commandFlags...)
-	cmd := gcli.Command{Name: "heartbeat",
+	cmd := gcli.Command{Name: "pingHeartbeat",
 		Flags: flags,
 		Usage: "Sends heartbeat to Opsgenie",
 		Action: func(c *gcli.Context) error {
-			command.HeartbeatAction(c)
+			command.PingHeartbeatAction(c)
+			return nil
+		}}
+	return cmd
+}
+
+func createHeartbeatCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name: "name",
+			Usage: "Name of the heartbeat to be created",
+		},
+		gcli.StringFlag{
+			Name: "description",
+			Usage: "Description for the heartbeat to be created",
+		},
+		gcli.IntFlag{
+			Name: "interval",
+			Usage: "Interval after which hearbeat will expire",
+		},
+		gcli.StringFlag{
+			Name: "intervalType",
+			Usage: "Type of interval : 'm' (minute), 'h' (hours), 'd' (days)",
+		},
+		gcli.BoolFlag{
+			Name: "enabled",
+			Usage: "If present, heartbaat will be enabled",
+		},
+		gcli.StringFlag{
+			Name: "ownerTeam",
+			Usage: "Owner team for the heartbeat",
+		},
+		gcli.StringFlag{
+			Name: "alertMessage",
+			Usage: "Heartbeat alert nessage",
+		},
+		gcli.StringFlag{
+			Name: "alertTag",
+			Usage: "Tag for the heartbeat alert",
+		},
+		gcli.StringFlag{
+			Name: "alertPriority",
+			Usage: "Priority of the alert created by Heartbeat",
+		},
+	}
+
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createHeartbeat",
+		Flags: flags,
+		Usage: "Creates a new opsgenie heartbeat",
+		Action: func(c *gcli.Context) error {
+			command.CreateHeartbeatAction(c)
+			return nil
+		}}
+	return cmd
+}
+
+func deleteHeartbeatCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the heartbeat to be deleted",
+		},
+	}
+
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteHeartbeat",
+		Flags: flags,
+		Usage: "Deletes opsgenie heartbeat",
+		Action: func(c *gcli.Context) error {
+			command.DeleteHeartbeatAction(c)
+			return nil
+		}}
+	return cmd
+}
+
+func disableHeartbeatCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the heartbeat to be disabled",
+		},
+	}
+
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "disableHeartbeat",
+		Flags: flags,
+		Usage: "Disabled opsgenie heartbeat",
+		Action: func(c *gcli.Context) error {
+			command.DisableHeartbeatAction(c)
+			return nil
+		}}
+	return cmd
+}
+
+func enableHeartbeatCommand() gcli.Command {
+	commandFlags := []gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of the heartbeat to be Enabled",
+		},
+	}
+
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "enableHeartbeat",
+		Flags: flags,
+		Usage: "Enable opsgenie heartbeat",
+		Action: func(c *gcli.Context) error {
+			command.EnableHeartbeatAction(c)
+			return nil
+		}}
+	return cmd
+}
+
+func listHeartbeatCommand() gcli.Command {
+	flags := append(commonFlags, renderingFlags...)
+	cmd := gcli.Command{Name: "listHeartbeat",
+		Flags: flags,
+		Usage: "List opsgenie heartbeats",
+		Action: func(c *gcli.Context) error {
+			command.ListHeartbeatAction(c)
 			return nil
 		}}
 	return cmd
@@ -2979,7 +3099,12 @@ func initCommands(app *gcli.App) {
 		executeActionCommand(),
 		closeAlertCommand(),
 		deleteAlertCommand(),
-		heartbeatCommand(),
+		pingHeartbeatCommand(),
+		createHeartbeatCommand(),
+		deleteHeartbeatCommand(),
+		disableHeartbeatCommand(),
+		enableHeartbeatCommand(),
+		listHeartbeatCommand(),
 		enableCommand(),
 		disableCommand(),
 		listAlertsCommand(),
