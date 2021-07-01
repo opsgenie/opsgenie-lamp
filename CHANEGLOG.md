@@ -1,4 +1,4 @@
-## 3.1.4 (July 5, 2021)
+## 3.1.4 (July 1, 2021)
 * **Heartbeat:** Added create/delete/list/enable/diable functionality for heatbeart
 * **Go-SDK:** Updated Go-SDK version
 
