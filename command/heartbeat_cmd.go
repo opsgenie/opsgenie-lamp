@@ -2,6 +2,7 @@ package command
 
 import (
 	"errors"
+	"fmt"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/heartbeat"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	gcli "github.com/urfave/cli"
@@ -190,21 +191,21 @@ func ListHeartbeatAction(c *gcli.Context) {
 
 	outputFormat := strings.ToLower(c.String("output-format"))
 	printMessage(DEBUG,"Heartbeats listed successfully, and will print as " + outputFormat)
+	var output string
 	switch outputFormat {
 	case "yaml":
-		output, err := resultToYAML(response.Heartbeats)
+		output, err = resultToYAML(response.Heartbeats)
 		if err != nil {
 			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		printMessage(INFO, output)
 	default:
 		isPretty := c.IsSet("pretty")
-		output, err := resultToJSON(response.Heartbeats, isPretty)
+		output, err = resultToJSON(response.Heartbeats, isPretty)
 		if err != nil {
 			printMessage(ERROR,err.Error())
 			os.Exit(1)
 		}
-		printMessage(INFO, output)
 	}
+	fmt.Println(output)
 }
