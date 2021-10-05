@@ -3081,6 +3081,514 @@ func listServiceCommand() gcli.Command {
 	return cmd
 }
 
+func getIntegrationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "Id of integration which needs to be fetched",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getIntegration",
+		Flags: flags,
+		Usage: "Get Integration",
+		Action: func(c *gcli.Context) error {
+			command.GetIntegrationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listIntegrationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "teamId",
+			Usage: "Team Id of the integrations",
+		},
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Type of integrations",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listIntegrations",
+		Flags: flags,
+		Usage: "List integrations",
+		Action: func(c *gcli.Context) error {
+			command.GetIntegrationListAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteIntegrationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "id",
+			Usage: "Id of integration which needs to be deleted",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteIntegration",
+		Flags: flags,
+		Usage: "Delete Integration",
+		Action: func(c *gcli.Context) error {
+			command.DeleteIntegrationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func authenticateIntegrationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Type of integrations that needs to be authenticated",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "authenticateIntegration",
+		Flags: flags,
+		Usage: "Authenticate Integration",
+		Action: func(c *gcli.Context) error {
+			command.AuthenticateIntegrationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func createIntegrationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of integration",
+		},
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Type of integration",
+		},
+		gcli.StringFlag{
+			Name:  "teamId",
+			Usage: "teamId of integration",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Description of integration",
+		},
+		gcli.StringFlag{
+			Name:  "typeSpecificProperties",
+			Usage: "integration specific properties in `a:b,c:d`",
+		},
+		gcli.BoolFlag{
+			Name:  "enabled",
+			Usage: "whether integration needs to be enabled",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createIntegration",
+		Flags: flags,
+		Usage: "Create Integration",
+		Action: func(c *gcli.Context) error {
+			command.CreateIntegrationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateIntegrationCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of integration",
+		},
+		gcli.StringFlag{
+			Name:  "teamId",
+			Usage: "teamId of integration",
+		},
+		gcli.StringFlag{
+			Name:  "description",
+			Usage: "Description of integration",
+		},
+		gcli.StringFlag{
+			Name:  "typeSpecificProperties",
+			Usage: "integration specific properties in `a:b,c:d`",
+		},
+		gcli.BoolFlag{
+			Name:  "enabled",
+			Usage: "whether integration needs to be enabled",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateIntegration",
+		Flags: flags,
+		Usage: "Update Integration",
+		Action: func(c *gcli.Context) error {
+			command.UpdateIntegrationAction(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func getIntegrationActionsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "integrationId",
+			Usage: "Id of integration which action needs to be fetched",
+		},
+		gcli.StringFlag{
+			Name:  "actionId",
+			Usage: "Action id of action which needs to be fetched",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "getIntegrationAction",
+		Flags: flags,
+		Usage: "Get Integration Action",
+		Action: func(c *gcli.Context) error {
+			command.GetIntegrationActionCommand(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func listIntegrationActionsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "integrationId",
+			Usage: "Integration Id of the action",
+		},
+		gcli.StringFlag{
+			Name:  "direction",
+			Usage: "direction of action",
+		},
+		gcli.StringFlag{
+			Name:  "integrationType",
+			Usage: "Type of integrations",
+		},
+		gcli.StringFlag{
+			Name:  "domain",
+			Usage: "domain of integrations",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "listIntegrationActions",
+		Flags: flags,
+		Usage: "List integration Actions",
+		Action: func(c *gcli.Context) error {
+			command.ListIntegrationActionCommand(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func deleteIntegrationActionsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "integrationId",
+			Usage: "Id of integration which action needs to be deleted",
+		},
+		gcli.StringFlag{
+			Name:  "actionId",
+			Usage: "Action id of action which needs to be deleted",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "deleteIntegrationAction",
+		Flags: flags,
+		Usage: "Delete Integration Action",
+		Action: func(c *gcli.Context) error {
+			command.DeleteIntegrationActionCommand(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func reorderIntegrationAction() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "integrationId",
+			Usage: "Id of integrations whose action needs to be re-ordered",
+		},
+		gcli.StringFlag{
+			Name:  "actionId",
+			Usage: "Action Id of action which needs to re-ordered",
+		},
+		gcli.StringFlag{
+			Name:  "successorId",
+			Usage: "Successor id of action",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "reorderIntegrationAction",
+		Flags: flags,
+		Usage: "Reorder Integration Action",
+		Action: func(c *gcli.Context) error {
+			command.ReorderIntegrationActionCommand(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func createIntegrationActionsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "integrationId",
+			Usage: "Name of integration",
+		},
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of Integration Action",
+		},
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Type of Integration Actions {close, create, acknowledge, AddNote, ignore}",
+		},
+		gcli.StringFlag{
+			Name:  "direction",
+			Usage: "Description of integration action",
+		},
+		gcli.StringFlag{
+			Name:  "domain",
+			Usage: "domain of integration action",
+		},
+		gcli.StringFlag{
+			Name:  "actionGroupId",
+			Usage: "Integration Action Group Id to which action needs to be added",
+		},
+		gcli.StringFlag{
+			Name:  "actionMappingType",
+			Usage: "Type of Integration Actions {close, create, acknowledge, AddNote, ignore}",
+		},
+		gcli.StringFlag{
+			Name:  "actionMappingParameter",
+			Usage: "Action Mapping Parameter",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingUser",
+			Usage: "User in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingNote",
+			Usage: "Note in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingAlias",
+			Usage: "Alias in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingSource",
+			Usage: "Source in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingMessage",
+			Usage: "Message in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingDescription",
+			Usage: "Description in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "tags",
+			Usage: "Tags in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "alertActions",
+			Usage: "Actions in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "filterConditionMatchType",
+			Usage: "Filter condition Match type",
+		},
+		gcli.StringFlag{
+			Name:  "filterCondition",
+			Usage: "Condition for action `FieldTypeCondition1:IsNotCondition1:OperationCondition1:expectedValueCondition1:keyCondition1, FieldTypeCondition2:IsNotCondition2:OperationCondition2:expectedValueCondition2:keyCondition2`",
+		},
+		gcli.StringFlag{
+			Name:  "teams",
+			Usage: "A comma separated list of teams",
+		},
+		gcli.StringFlag{
+			Name:  "users",
+			Usage: "A comma separated list of users",
+		},
+		gcli.StringFlag{
+			Name:  "escalations",
+			Usage: "A comma separated list of escalations",
+		},
+		gcli.StringFlag{
+			Name:  "schedules",
+			Usage: "A comma separated list of schedules",
+		},
+		gcli.StringFlag{
+			Name:  "typeSpecificProperties",
+			Usage: "integration specific properties in `a:b,c:d`",
+		},
+		gcli.BoolFlag{
+			Name:  "enabled",
+			Usage: "whether integration needs to be enabled",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "createIntegrationAction",
+		Flags: flags,
+		Usage: "Create Integration Actions",
+		Action: func(c *gcli.Context) error {
+			command.CreateIntegrationActionCommand(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func updateIntegrationActionsCommand() gcli.Command {
+	commandFlags := append([]gcli.Flag{
+		gcli.StringFlag{
+			Name:  "integrationId",
+			Usage: "Name of integration",
+		},
+		gcli.StringFlag{
+			Name:  "name",
+			Usage: "Name of Integration Action",
+		},
+		gcli.StringFlag{
+			Name:  "type",
+			Usage: "Type of Integration Actions {close, create, acknowledge, AddNote, ignore}",
+		},
+		gcli.StringFlag{
+			Name:  "actionMappingType",
+			Usage: "Type of Integration Actions {close, create, acknowledge, AddNote, ignore}",
+		},
+		gcli.StringFlag{
+			Name:  "actionMappingParameter",
+			Usage: "Action Mapping Parameter",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingUser",
+			Usage: "User in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingNote",
+			Usage: "Note in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingAlias",
+			Usage: "Alias in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingSource",
+			Usage: "Source in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingMessage",
+			Usage: "Message in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "fieldMappingDescription",
+			Usage: "Description in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "tags",
+			Usage: "Tags in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "alertActions",
+			Usage: "Actions in Field Mapping",
+		},
+		gcli.StringFlag{
+			Name:  "filterConditionMatchType",
+			Usage: "Filter condition Match type",
+		},
+		gcli.StringFlag{
+			Name:  "filterCondition",
+			Usage: "Condition for action `FieldTypeCondition1:IsNotCondition1:OperationCondition1:expectedValueCondition1:keyCondition1, FieldTypeCondition2:IsNotCondition2:OperationCondition2:expectedValueCondition2:keyCondition2`",
+		},
+		gcli.StringFlag{
+			Name:  "teams",
+			Usage: "A comma separated list of teams",
+		},
+		gcli.StringFlag{
+			Name:  "users",
+			Usage: "A comma separated list of users",
+		},
+		gcli.StringFlag{
+			Name:  "escalations",
+			Usage: "A comma separated list of escalations",
+		},
+		gcli.StringFlag{
+			Name:  "schedules",
+			Usage: "A comma separated list of schedules",
+		},
+		gcli.StringFlag{
+			Name:  "typeSpecificProperties",
+			Usage: "integration specific properties in `a:b,c:d`",
+		},
+		gcli.BoolFlag{
+			Name:  "enabled",
+			Usage: "whether integration needs to be enabled",
+		},
+		gcli.BoolFlag{
+			Name:  "pretty",
+			Usage: "For more readable JSON output",
+		},
+	}, renderingFlags...)
+	flags := append(commonFlags, commandFlags...)
+	cmd := gcli.Command{Name: "updateIntegrationActions",
+		Flags: flags,
+		Usage: "Update Integration Actions",
+		Action: func(c *gcli.Context) error {
+			command.UpdateIntegrationActionCommand(c)
+			return nil
+		},
+	}
+	return cmd
+}
+
 func initCommands(app *gcli.App) {
 	app.Commands = []gcli.Command{
 		createAlertCommand(),
@@ -3178,7 +3686,18 @@ func initCommands(app *gcli.App) {
 		deleteServiceCommand(),
 		getServiceCommand(),
 		listServiceCommand(),
-
+		createIntegrationCommand(),
+		updateIntegrationCommand(),
+		getIntegrationCommand(),
+		listIntegrationCommand(),
+		deleteIntegrationCommand(),
+		authenticateIntegrationCommand(),
+		getIntegrationActionsCommand(),
+		listIntegrationActionsCommand(),
+		deleteIntegrationActionsCommand(),
+		reorderIntegrationAction(),
+		createIntegrationActionsCommand(),
+		updateIntegrationActionsCommand(),
 	}
 }
 
