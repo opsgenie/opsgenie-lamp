@@ -23,20 +23,18 @@ environment variables.
 don't have a valid account yet. Create an API Integration and get your API key.
 
 ## Installation
-To download all packages in the repo with their dependencies, simply run
+To install Lamp, run:
 
-`go get github.com/opsgenie/opsgenie-lamp/...`
+```shell
+go install github.com/opsgenie/opsgenie-lamp@latest
+```
 
-The command will automatically download and install necessary package files and dependencies under the src directory of the GOPATH.
-
-Then cd to GOPATH/src/github.com/opsgenie/opsgenie-lamp and run:
-
-`go install`
+The command will create the executable file `GOPATH/bin/opsgenie-lamp`
 
 ## Configuration
 You can make configurations via Lamp configuration file. It's located under
 
-`LAMP_HOME/conf/lamp.conf`
+`GOPATH/conf/opsgenie-integration.conf`
 
 If you want to use a configuration file located in some custom location, you can define it in your commands:
 
